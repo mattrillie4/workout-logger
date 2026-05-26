@@ -10,7 +10,15 @@ const userRouter = require("./routes/user");
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// cors configuration for frontend connection
+app.use(
+  cors({
+    origin: "http://localhost:5173", // only allowing frontend server
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 app.use(morgan("dev"));
 app.use(express.json());
 

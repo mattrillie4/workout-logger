@@ -84,7 +84,7 @@ router.post("/login", async (req, res) => {
     if (!user || !(await argon2.verify(user.hash, password))) {
       return res.status(401).json({
         error: true,
-        message: "Incorrect email or password ",
+        message: "Incorrect email or password",
       });
     }
     // Now that input is validated, issue JWT (24hr life)

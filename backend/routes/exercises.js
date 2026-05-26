@@ -38,7 +38,10 @@ router.get("/:category", async (req, res) => {
       where: { category: exerciseCategory },
     });
     //return success
-    res.status(200).json(results);
+    res.status(200).json({
+      error: false,
+      data: results,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
