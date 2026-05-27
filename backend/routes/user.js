@@ -3,6 +3,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const argon2 = require("argon2");
 const { PrismaClient } = require("@prisma/client");
+const authorisation = require("../middleware/authorisation");
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -101,6 +102,41 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+});
+
+// GET request, /user/me
+// Checks if JWT is valid, returns logged in user info
+// Useful for testing and user persistence
+router.get("/me", authorisation, async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+    // if user doesnt exist, return error
+    if (!user) {
+      return res.status(404).json({
+        error: true,
+        message: "User not found",
+      });
+    }
+    //else, return success and user
+    res.status(200).json({
+      error: false,
+      data: user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
   }
 });
 module.exports = router;

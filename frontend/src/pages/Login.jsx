@@ -31,7 +31,7 @@ const Login = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Registration failed. Try a different email.",
+          "Login failed. Check your email and password.",
       ); // null chaining to avoid unessecary crashes
     }
   };
