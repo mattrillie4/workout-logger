@@ -19,11 +19,13 @@ model User {
 
 model Exercise {
   id              Int               @id @default(autoincrement())
-  name            String            @unique
+  name            String            
   category        String
   userId          Int?
   user            User?             @relation(fields: [userId], references: [id])
   workoutExercises WorkoutExercise[]
+
+  @@unique([name, userId])
 }
 
 model Workout {
