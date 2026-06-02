@@ -175,13 +175,189 @@ router.get("/:id", authorisation, async (req, res) => {
     if (!workout) {
       return res.status(404).json({
         error: true,
-        message: "Workout not found",
+        message: "Workout does not exist",
       });
     }
     // if it does exist, return success status and data object
     res.status(200).json({
       error: false,
       data: workout,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+// DELETE request, "/workouts/:id", allows an authorised user to delete a specific workout given its id
+// will be used on the frontend to allow deletion of workouts
+router.delete("/:id", authorisation, async (req, res) => {
+  const userId = req.user.userId;
+  const workoutId = parseInt(req.params.id);
+
+  // input validation for id
+  if (Number.isNaN(workoutId) || workoutId < 1) {
+    return res.status(400).json({
+      error: true,
+      message: "Invalid workout id",
+    });
+  }
+  try {
+    // first query database for specific workout belonging to user
+    const workout = await prisma.workout.findFirst({
+      where: {
+        id: workoutId,
+        userId,
+        userId,
+      },
+    });
+    // return error if it doesnt exist
+    if (!workout) {
+      return res.status(404).json({
+        error: true,
+        message: "Workout does not exist",
+      });
+    }
+    // if it does, delete
+    await prisma.workout.delete({
+      where: {
+        id: workoutId,
+      },
+    });
+    res.status(200).json({
+      error: false,
+      message: "Workout deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+// PUT request, "/workouts/:id", allows an authorised user to update an already existing workout
+router.put("/:id", authorisation, async (req, res) => {
+  const userId = req.user.userId;
+  const workoutId = parseInt(req.params.id);
+
+  const { name, date, notes, cardioDuration, exercises } = req.body ?? {};
+
+  // input validation for id
+  if (Number.isNaN(workoutId) || workoutId < 1) {
+    return res.status(400).json({
+      error: true,
+      message: "Invalid workout id",
+    });
+  }
+
+  // Detailed error handling, ensures workouts are given in the correct format
+  if (!name || typeof name !== "string") {
+    return res.status(400).json({
+      error: true,
+      message: "Workout name is required",
+    });
+  }
+
+  if (!Array.isArray(exercises) || exercises.length === 0) {
+    return res.status(400).json({
+      error: true,
+      message: "At least one exercise is required",
+    });
+  }
+
+  for (const exercise of exercises) {
+    if (
+      !exercise.exerciseId ||
+      !Array.isArray(exercise.sets) ||
+      exercise.sets.length === 0
+    ) {
+      return res.status(400).json({
+        error: true,
+        message: "Each exercise must have an exerciseId and at least one set",
+      });
+    }
+
+    for (const set of exercise.sets) {
+      if (set.reps === undefined || set.weight === undefined) {
+        return res.status(400).json({
+          error: true,
+          message: "Each set must have reps and weight",
+        });
+      }
+    }
+  }
+
+  try {
+    // Check workout exists and belongs to this user
+    const workout = await prisma.workout.findFirst({
+      where: {
+        id: workoutId,
+        userId: userId,
+      },
+    });
+
+    if (!workout) {
+      return res.status(404).json({
+        error: true,
+        message: "Workout does not exist",
+      });
+    }
+
+    const updatedWorkout = await prisma.$transaction(async (tx) => {
+      // delete old exercises attached to this workout to be replaced
+      // due to cascade delete, the sets attached to these workoutExercises will also delete
+      await tx.workoutExercise.deleteMany({
+        where: {
+          workoutId: workoutId,
+        },
+      });
+
+      // update workout and recreate nested exercises/sets
+      const result = await tx.workout.update({
+        where: {
+          id: workoutId,
+        },
+        data: {
+          name: name,
+          date: date ? new Date(date) : workout.date,
+          notes: notes || null,
+          cardioDuration: cardioDuration ? parseInt(cardioDuration) : null,
+
+          workoutExercises: {
+            create: exercises.map((ex, exerciseIndex) => ({
+              exerciseId: parseInt(ex.exerciseId),
+              order: exerciseIndex + 1,
+              sets: {
+                create: ex.sets.map((set, setIndex) => ({
+                  reps: parseInt(set.reps),
+                  weight: parseFloat(set.weight),
+                  order: setIndex + 1,
+                })),
+              },
+            })),
+          },
+        },
+        include: {
+          workoutExercises: {
+            include: {
+              exercise: true,
+              sets: true,
+            },
+          },
+        },
+      });
+
+      return result;
+    });
+
+    res.status(200).json({
+      error: false,
+      data: updatedWorkout,
     });
   } catch (error) {
     console.error(error);

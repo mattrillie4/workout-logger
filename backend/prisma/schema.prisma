@@ -41,7 +41,7 @@ model Workout {
 model WorkoutExercise {
   id         Int      @id @default(autoincrement())
   workoutId  Int
-  workout    Workout  @relation(fields: [workoutId], references: [id])
+  workout    Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   exerciseId Int
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
   order      Int
@@ -51,7 +51,7 @@ model WorkoutExercise {
 model Set {
   id                Int             @id @default(autoincrement())
   workoutExerciseId Int
-  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id])
+  workoutExercise   WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
   reps              Int
   weight            Float
   order             Int
