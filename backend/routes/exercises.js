@@ -12,6 +12,10 @@ router.get("/", async (req, res) => {
     const globalExercises = await prisma.exercise.findMany({
       where: {
         userId: null,
+        isArchived: false,
+      },
+      orderBy: {
+        name: "asc",
       },
     });
     res.status(200).json({
@@ -38,6 +42,7 @@ router.get("/me", authorisation, async (req, res) => {
     // query database
     const exercises = await prisma.exercise.findMany({
       where: {
+        isArchived: false,
         OR: [{ userId: null }, { userId: userId }],
       },
       orderBy: {
@@ -48,6 +53,61 @@ router.get("/me", authorisation, async (req, res) => {
     res.status(200).json({
       error: false,
       data: exercises,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+// DELETE request, /exercises/:id
+// Allows a user to delete a custom exercise that they previously created
+router.delete("/:id", authorisation, async (req, res) => {
+  const userId = req.user.userId;
+  const exerciseId = parseInt(req.params.id);
+
+  if (Number.isNaN(exerciseId) || exerciseId < 1) {
+    return res.status(400).json({
+      error: true,
+      message: "Invalid exercise id",
+    });
+  }
+
+  try {
+    const exercise = await prisma.exercise.findFirst({
+      where: {
+        id: exerciseId,
+        userId: userId,
+      },
+    });
+    if (!exercise) {
+      return res.status(404).json({
+        error: true,
+        message: "Exercise does not exist",
+      });
+    }
+    // if for some reason exercise is already archived(deleted) return error
+    if (exercise.isArchived) {
+      return res.status(409).json({
+        error: true,
+        message: "Exercise is already archived",
+      });
+    }
+    await prisma.exercise.update({
+      where: {
+        id: exerciseId,
+        userId: userId,
+      },
+      data: {
+        isArchived: true,
+      },
+    });
+    res.status(200).json({
+      error: false,
+      message: "Exercise successfully archived",
     });
   } catch (error) {
     console.error(error);
@@ -128,6 +188,7 @@ router.post("/", authorisation, async (req, res) => {
     const existingExercise = await prisma.exercise.findFirst({
       where: {
         name: name.trim(),
+        isArchived: false,
         OR: [{ userId: null }, { userId: userId }],
       },
     });

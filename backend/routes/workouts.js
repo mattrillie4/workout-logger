@@ -3,6 +3,90 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const authorisation = require("../middleware/authorisation");
 
+// set limits for workouts
+const MAX_EXERCISES_PER_WORKOUT = 20;
+const MAX_SETS_PER_EXERCISE = 20;
+
+// general function to validate the workout body in the request
+// used in PUT and POST requests, avoids refactoring
+const validateWorkoutBody = ({
+  name,
+  exercises,
+  cardioDuration,
+  notes,
+  date,
+}) => {
+  // validate name
+  if (!name || typeof name !== "string" || name.trim() === "") {
+    return "Workout name is required";
+  }
+  // validate notes
+  if (notes !== undefined && notes !== null && typeof notes !== "string") {
+    return "Notes must be a string";
+  }
+  // date validation
+  if (date !== undefined && date !== null && date !== "") {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "Invalid date";
+    }
+  }
+  // cardio duration validation
+  if (
+    cardioDuration !== undefined &&
+    cardioDuration !== null &&
+    cardioDuration !== ""
+  ) {
+    const parsedCardioDuration = parseInt(cardioDuration);
+
+    if (Number.isNaN(parsedCardioDuration) || parsedCardioDuration < 0) {
+      return "Cardio duration must be a valid positive number";
+    }
+  }
+  // loop through exercises and validate amounts and that each one has sets and reps
+  if (!Array.isArray(exercises) || exercises.length === 0) {
+    return "At least one exercise is required";
+  }
+
+  if (exercises.length > MAX_EXERCISES_PER_WORKOUT) {
+    return `A workout cannot contain more than ${MAX_EXERCISES_PER_WORKOUT} exercises`;
+  }
+
+  for (const exercise of exercises) {
+    const exerciseId = parseInt(exercise.exerciseId);
+
+    if (
+      Number.isNaN(exerciseId) ||
+      exerciseId < 1 ||
+      !Array.isArray(exercise.sets) ||
+      exercise.sets.length === 0
+    ) {
+      return "Each exercise must have a valid exerciseId and at least one set";
+    }
+
+    if (exercise.sets.length > MAX_SETS_PER_EXERCISE) {
+      return `An exercise cannot contain more than ${MAX_SETS_PER_EXERCISE} sets`;
+    }
+
+    for (const set of exercise.sets) {
+      const reps = parseInt(set.reps);
+      const weight = parseFloat(set.weight);
+
+      if (
+        Number.isNaN(reps) ||
+        Number.isNaN(weight) ||
+        reps < 1 ||
+        weight < 0
+      ) {
+        return "Each set must have valid reps and weight";
+      }
+    }
+  }
+
+  return null;
+};
+
 const prisma = new PrismaClient();
 
 // POST request, "/workouts", allows an authorised user to create a workout
@@ -10,48 +94,21 @@ router.post("/", authorisation, async (req, res) => {
   const { name, date, notes, cardioDuration, exercises } = req.body ?? {};
   const userId = req.user.userId;
 
-  // Detailed error handling, ensures workouts are given in the correct format
-  if (!name || typeof name !== "string") {
+  // call validation function
+  const validationError = validateWorkoutBody({ name, exercises });
+  // if it contains error, return
+  if (validationError) {
     return res.status(400).json({
       error: true,
-      message: "Workout name is required",
+      message: validationError,
     });
-  }
-
-  if (!Array.isArray(exercises) || exercises.length === 0) {
-    return res.status(400).json({
-      error: true,
-      message: "At least one exercise is required",
-    });
-  }
-
-  for (const exercise of exercises) {
-    if (
-      !exercise.exerciseId ||
-      !Array.isArray(exercise.sets) ||
-      exercise.sets.length === 0
-    ) {
-      return res.status(400).json({
-        error: true,
-        message: "Each exercise must have an exerciseId and at least one set",
-      });
-    }
-
-    for (const set of exercise.sets) {
-      if (set.reps === undefined || set.weight === undefined) {
-        return res.status(400).json({
-          error: true,
-          message: "Each set must have reps and weight",
-        });
-      }
-    }
   }
 
   try {
     const result = await prisma.workout.create({
       // create initial workout entry (including user specific id)
       data: {
-        name: name,
+        name: name.trim(),
         userId: userId,
         date: date ? new Date(date) : new Date(),
         notes: notes || null,
@@ -211,7 +268,6 @@ router.delete("/:id", authorisation, async (req, res) => {
       where: {
         id: workoutId,
         userId,
-        userId,
       },
     });
     // return error if it doesnt exist
@@ -247,49 +303,14 @@ router.put("/:id", authorisation, async (req, res) => {
 
   const { name, date, notes, cardioDuration, exercises } = req.body ?? {};
 
-  // input validation for id
-  if (Number.isNaN(workoutId) || workoutId < 1) {
+  // call validation function
+  const validationError = validateWorkoutBody({ name, exercises });
+  // if it contains error, return
+  if (validationError) {
     return res.status(400).json({
       error: true,
-      message: "Invalid workout id",
+      message: validationError,
     });
-  }
-
-  // Detailed error handling, ensures workouts are given in the correct format
-  if (!name || typeof name !== "string") {
-    return res.status(400).json({
-      error: true,
-      message: "Workout name is required",
-    });
-  }
-
-  if (!Array.isArray(exercises) || exercises.length === 0) {
-    return res.status(400).json({
-      error: true,
-      message: "At least one exercise is required",
-    });
-  }
-
-  for (const exercise of exercises) {
-    if (
-      !exercise.exerciseId ||
-      !Array.isArray(exercise.sets) ||
-      exercise.sets.length === 0
-    ) {
-      return res.status(400).json({
-        error: true,
-        message: "Each exercise must have an exerciseId and at least one set",
-      });
-    }
-
-    for (const set of exercise.sets) {
-      if (set.reps === undefined || set.weight === undefined) {
-        return res.status(400).json({
-          error: true,
-          message: "Each set must have reps and weight",
-        });
-      }
-    }
   }
 
   try {
@@ -323,7 +344,7 @@ router.put("/:id", authorisation, async (req, res) => {
           id: workoutId,
         },
         data: {
-          name: name,
+          name: name.trim(),
           date: date ? new Date(date) : workout.date,
           notes: notes || null,
           cardioDuration: cardioDuration ? parseInt(cardioDuration) : null,

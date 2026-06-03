@@ -23,6 +23,7 @@ model Exercise {
   category        String
   userId          Int?
   user            User?             @relation(fields: [userId], references: [id])
+  isArchived      Boolean           @default(false)
   workoutExercises WorkoutExercise[]
 
   @@unique([name, userId])
