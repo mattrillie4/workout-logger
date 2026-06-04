@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import api from "../api/axiosConfig";
 
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 
 const Login = () => {
   // set states
@@ -12,6 +13,7 @@ const Login = () => {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,12 +23,12 @@ const Login = () => {
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
+      login(response.data.token);
       // set success and re-navigate
       setSuccess(true);
       setError(null);
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 1500);
     } catch (err) {
       setError(

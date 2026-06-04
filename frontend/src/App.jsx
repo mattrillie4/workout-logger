@@ -2,21 +2,23 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import NavBar from "./components/NavBar";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
     <BrowserRouter>
+      <NavBar />
       <Routes>
-        {/* Route for Login */}
+        //login page
         <Route path="/login" element={<Login />} />
-
-        {/* Route for Register */}
+        //register page
         <Route path="/register" element={<Register />} />
-
-        {/* Redirect root URL (/) straight to login */}
-        <Route path="/" element={<Navigate to="/register" replace />} />
-
-        {/* Catch-all 404 Route */}
+        // dashboard page
+        <Route path="/dashboard" element={<Dashboard />} />
+        // root url
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        //catch-all for 404 error route
         <Route
           path="*"
           element={
