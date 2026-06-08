@@ -34,14 +34,15 @@ const calculateAge = (dob) => {
   return age;
 };
 //capitilisation helper function
-const capitalise = (str) =>
-  str ? str.charAt(0).toUpperCase() + str.slice(1) : "-";
-
+const capitalise = (str) => {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "-";
+};
+// date format helper function
 const formatDateInput = (date) => {
   if (!date) return "";
   return new Date(date).toISOString().slice(0, 10);
 };
-
+//formats api response
 const profileToForm = (profile) => ({
   height_cm: profile?.height_cm ?? "",
   weight_kg: profile?.weight_kg ?? "",
@@ -102,6 +103,7 @@ const Profile = () => {
     setIsSavingProfile(true);
 
     try {
+      // send profile data to backend
       const response = await api.post("/user/profile", profileForm);
       setProfile(response.data.data);
       setProfileForm(profileToForm(response.data.data));
@@ -288,7 +290,9 @@ const Profile = () => {
                         updateProfileForm("height_cm", event.target.value)
                       }
                       helperText="Centimetres"
-                      slotProps={{ htmlInput: { min: 50, max: 300, step: 0.1 } }}
+                      slotProps={{
+                        htmlInput: { min: 50, max: 300, step: 0.1 },
+                      }}
                     />
                     <TextField
                       fullWidth
@@ -299,7 +303,9 @@ const Profile = () => {
                         updateProfileForm("weight_kg", event.target.value)
                       }
                       helperText="Kilograms"
-                      slotProps={{ htmlInput: { min: 20, max: 500, step: 0.1 } }}
+                      slotProps={{
+                        htmlInput: { min: 20, max: 500, step: 0.1 },
+                      }}
                     />
                     <TextField
                       fullWidth

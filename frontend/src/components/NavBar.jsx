@@ -10,6 +10,7 @@ import {
 import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
+import NoteIcon from "@mui/icons-material/Note";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
@@ -17,6 +18,7 @@ export default function NavBar() {
   const navigate = useNavigate();
   const { isLoggedIn, logout } = useAuth();
 
+  // logout helper for button
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -46,6 +48,13 @@ export default function NavBar() {
 
           {isLoggedIn ? (
             <>
+              <Button
+                color="inherit"
+                startIcon={<NoteIcon />}
+                onClick={() => navigate("/workouts")}
+              >
+                Workouts
+              </Button>
               <Button
                 color="inherit"
                 startIcon={<PersonIcon />}

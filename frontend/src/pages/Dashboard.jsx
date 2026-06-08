@@ -56,7 +56,9 @@ const Dashboard = () => {
       setError("");
 
       try {
-        const response = await api.get(isLoggedIn ? "/exercises/me" : "/exercises");
+        const response = await api.get(
+          isLoggedIn ? "/exercises/me" : "/exercises",
+        );
         setExerciseOptions(response.data.data || []);
       } catch (err) {
         setError(
@@ -69,7 +71,7 @@ const Dashboard = () => {
 
     fetchExercises();
   }, [isLoggedIn]);
-
+  //memoize exercises to avoid re-renders
   const exerciseMap = useMemo(() => {
     return exerciseOptions.reduce((map, exercise) => {
       map[exercise.id] = exercise;
@@ -121,7 +123,9 @@ const Dashboard = () => {
   const removeExercise = (exerciseIndex) => {
     setWorkout((current) => ({
       ...current,
-      exercises: current.exercises.filter((_, index) => index !== exerciseIndex),
+      exercises: current.exercises.filter(
+        (_, index) => index !== exerciseIndex,
+      ),
     }));
   };
 
@@ -146,7 +150,9 @@ const Dashboard = () => {
 
         return {
           ...exercise,
-          sets: exercise.sets.filter((_, currentSetIndex) => currentSetIndex !== setIndex),
+          sets: exercise.sets.filter(
+            (_, currentSetIndex) => currentSetIndex !== setIndex,
+          ),
         };
       }),
     }));
@@ -251,7 +257,8 @@ const Dashboard = () => {
 
         {!isLoggedIn && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            You can build the workout here, but you need to log in before saving.
+            You can build the workout here, but you need to log in before
+            saving.
           </Alert>
         )}
 
@@ -353,7 +360,11 @@ const Dashboard = () => {
             >
               <Stack direction="row" spacing={1} alignItems="center">
                 <FitnessCenterIcon color="primary" />
-                <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography
+                  component="h2"
+                  variant="h6"
+                  sx={{ fontWeight: 700 }}
+                >
                   Exercises
                 </Typography>
               </Stack>
@@ -370,7 +381,9 @@ const Dashboard = () => {
             {isLoadingExercises ? (
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <CircularProgress size={22} />
-                <Typography color="text.secondary">Loading exercises</Typography>
+                <Typography color="text.secondary">
+                  Loading exercises
+                </Typography>
               </Stack>
             ) : (
               workout.exercises.map((exercise, exerciseIndex) => {
@@ -415,7 +428,8 @@ const Dashboard = () => {
                             ))}
                           </Select>
                           <FormHelperText>
-                            {selectedExercise?.category || "Choose from your library"}
+                            {selectedExercise?.category ||
+                              "Choose from your library"}
                           </FormHelperText>
                         </FormControl>
                         <IconButton
@@ -443,7 +457,9 @@ const Dashboard = () => {
                               },
                             }}
                           >
-                            <Box sx={{ gridColumn: { xs: "1 / -1", sm: "auto" } }}>
+                            <Box
+                              sx={{ gridColumn: { xs: "1 / -1", sm: "auto" } }}
+                            >
                               <Typography color="text.secondary">
                                 Set {setIndex + 1}
                               </Typography>
