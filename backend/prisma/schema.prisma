@@ -15,6 +15,10 @@ model User {
   createdAt DateTime  @default(now())
   workouts  Workout[]
   exercises Exercise[]
+  height_cm Float?
+  weight_kg Float?
+  date_of_birth DateTime?
+  gender    String?
 }
 
 model Exercise {

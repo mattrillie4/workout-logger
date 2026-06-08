@@ -139,4 +139,153 @@ router.get("/me", authorisation, async (req, res) => {
     });
   }
 });
+
+// GET request, /user/profile
+// Retrieves the profile information for a given user
+router.get("/profile", authorisation, async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const profileInfo = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        height_cm: true,
+        weight_kg: true,
+        date_of_birth: true,
+        gender: true,
+      },
+    });
+    //if user doesnt exist for some reason, return error
+    if (!profileInfo) {
+      return res.status(404).json({
+        error: true,
+        message: "User not found",
+      });
+    }
+    // return success and data
+    res.status(200).json({
+      error: false,
+      data: profileInfo,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+// POST request, /user/profile
+// Updates the user database with provided profile information, inline with the get request
+router.post("/profile", authorisation, async (req, res) => {
+  //extract user id and profile info
+  const userId = req.user.userId;
+  const { date_of_birth, weight_kg, height_cm, gender } = req.body ?? {};
+  const parsedHeight =
+    height_cm === undefined
+      ? undefined
+      : height_cm === null || height_cm === ""
+      ? null
+      : parseFloat(height_cm);
+  const parsedWeight =
+    weight_kg === undefined
+      ? undefined
+      : weight_kg === null || weight_kg === ""
+      ? null
+      : parseFloat(weight_kg);
+  const parsedGender =
+    gender === undefined ? undefined : gender ? gender.trim().toLowerCase() : null;
+  const parsedDateOfBirth =
+    date_of_birth === undefined
+      ? undefined
+      : date_of_birth
+      ? new Date(date_of_birth)
+      : null;
+
+  // input validation
+  if (
+    parsedHeight !== undefined &&
+    parsedHeight !== null &&
+    (Number.isNaN(parsedHeight) || parsedHeight < 50 || parsedHeight > 300)
+  ) {
+    return res.status(400).json({
+      error: true,
+      message: "Height must be a number between 50 and 300 cm",
+    });
+  }
+
+  if (
+    parsedWeight !== undefined &&
+    parsedWeight !== null &&
+    (Number.isNaN(parsedWeight) || parsedWeight < 20 || parsedWeight > 500)
+  ) {
+    return res.status(400).json({
+      error: true,
+      message: "Weight must be a number between 20 and 500 kg",
+    });
+  }
+
+  if (parsedDateOfBirth !== undefined && parsedDateOfBirth !== null) {
+    if (isNaN(parsedDateOfBirth.getTime())) {
+      return res
+        .status(400)
+        .json({ error: true, message: "Date of birth must be a valid date" });
+    }
+    const today = new Date();
+    let age = today.getFullYear() - parsedDateOfBirth.getFullYear();
+    const monthDiff = today.getMonth() - parsedDateOfBirth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < parsedDateOfBirth.getDate())
+    ) {
+      age--;
+    }
+    if (age < 13 || age > 120) {
+      return res
+        .status(400)
+        .json({ error: true, message: "Age must be between 13 and 120" });
+    }
+  }
+
+  if (
+    parsedGender !== undefined &&
+    parsedGender !== null &&
+    !["male", "female", "other"].includes(parsedGender)
+  ) {
+    return res
+      .status(400)
+      .json({ error: true, message: "Invalid value for gender" });
+  }
+  try {
+    const updatedProfile = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        date_of_birth: parsedDateOfBirth,
+        weight_kg: parsedWeight,
+        height_cm: parsedHeight,
+        gender: parsedGender,
+      },
+      select: {
+        height_cm: true,
+        weight_kg: true,
+        date_of_birth: true,
+        gender: true,
+      },
+    });
+    //return success
+    res.status(200).json({
+      error: false,
+      message: "Profile updated successfully",
+      data: updatedProfile,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error",
+    });
+  }
+});
 module.exports = router;
