@@ -1,9 +1,19 @@
 // Imports
-import React, { useState } from "react";
+import { useState } from "react";
 import api from "../api/axiosConfig";
+import {
+  Alert,
+  Box,
+  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import LoginIcon from "@mui/icons-material/Login";
 
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/useAuth";
 
 const Login = () => {
   // set states
@@ -39,26 +49,56 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>
-            Email:
-            <input
+    <Box
+      component="main"
+      sx={{
+        bgcolor: "#f6f8fa",
+        minHeight: "calc(100vh - 64px)",
+        px: 2,
+        py: { xs: 4, md: 7 },
+      }}
+    >
+      <Paper
+        component="form"
+        onSubmit={handleLogin}
+        elevation={0}
+        sx={{
+          border: "1px solid #dde3ea",
+          borderRadius: 2,
+          maxWidth: 440,
+          mx: "auto",
+          p: { xs: 2.5, sm: 4 },
+        }}
+      >
+        <Stack spacing={2.5}>
+          <Stack spacing={0.5}>
+            <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
+              Login
+            </Typography>
+            <Typography color="text.secondary">
+              Sign in to continue logging your workouts.
+            </Typography>
+          </Stack>
+
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && (
+            <Alert severity="success">Login successful! Redirecting...</Alert>
+          )}
+
+          <Stack spacing={2}>
+            <TextField
+              fullWidth
+              label="Email"
               type="email"
               maxLength={255}
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
-              }}
+                  setEmail(e.target.value);
+                }}
             />
-          </label>
-        </div>
-        <div>
-          <label>
-            Password:
-            <input
+            <TextField
+              fullWidth
+              label="Password"
               type="password"
               value={password}
               onChange={(e) => {
@@ -66,24 +106,26 @@ const Login = () => {
               }}
               required
             />
-          </label>
-        </div>
-        <button type="submit">Sign In</button>
-      </form>
+          </Stack>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && (
-        <p style={{ color: "green" }}>Login successful! Redirecting...</p>
-      )}
-      <div style={{ marginTop: "10px", textAlign: "center" }}>
-        <Link
-          to="/register"
-          style={{ textDecoration: "none", color: "#007bff" }}
-        >
-          Don't have an account? Sign Up
-        </Link>
-      </div>
-    </div>
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            startIcon={<LoginIcon />}
+          >
+            Sign In
+          </Button>
+
+          <Typography align="center" color="text.secondary">
+            Don't have an account?{" "}
+            <Link to="/register" style={{ color: "inherit", fontWeight: 700 }}>
+              Sign Up
+            </Link>
+          </Typography>
+        </Stack>
+      </Paper>
+    </Box>
   );
 };
 export default Login;

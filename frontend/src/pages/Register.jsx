@@ -1,6 +1,16 @@
 // Imports
-import React, { useState } from "react";
+import { useState } from "react";
 import api from "../api/axiosConfig";
+import {
+  Alert,
+  Box,
+  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -34,42 +44,78 @@ const Register = () => {
     }
   };
   return (
-    <div>
-      <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        <div>
-          <label>
-            Email:
-            <input
+    <Box
+      component="main"
+      sx={{
+        bgcolor: "#f6f8fa",
+        minHeight: "calc(100vh - 64px)",
+        px: 2,
+        py: { xs: 4, md: 7 },
+      }}
+    >
+      <Paper
+        component="form"
+        onSubmit={handleRegister}
+        elevation={0}
+        sx={{
+          border: "1px solid #dde3ea",
+          borderRadius: 2,
+          maxWidth: 440,
+          mx: "auto",
+          p: { xs: 2.5, sm: 4 },
+        }}
+      >
+        <Stack spacing={2.5}>
+          <Stack spacing={0.5}>
+            <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
+              Register
+            </Typography>
+            <Typography color="text.secondary">
+              Create an account to start tracking your training.
+            </Typography>
+          </Stack>
+
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && (
+            <Alert severity="success">Account created! Please login</Alert>
+          )}
+
+          <Stack spacing={2}>
+            <TextField
+              fullWidth
+              label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </label>
-        </div>
-        <div>
-          <label>
-            Password:
-            <input
+            <TextField
+              fullWidth
+              label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </label>
-        </div>
-        <button type="submit">Signup</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && (
-        <p style={{ color: "green" }}>Account created! Please login</p>
-      )}
-      <div style={{ marginTop: "10px", textAlign: "center" }}>
-        <Link to="/login" style={{ textDecoration: "none", color: "#007bff" }}>
-          Already have an account? Sign In
-        </Link>
-      </div>
-    </div>
+          </Stack>
+
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            startIcon={<PersonAddIcon />}
+          >
+            Signup
+          </Button>
+
+          <Typography align="center" color="text.secondary">
+            Already have an account?{" "}
+            <Link to="/login" style={{ color: "inherit", fontWeight: 700 }}>
+              Sign In
+            </Link>
+          </Typography>
+        </Stack>
+      </Paper>
+    </Box>
   );
 };
 

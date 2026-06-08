@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const exerciseRouter = require("./routes/exercises");
 const workoutRouter = require("./routes/workouts");
 const userRouter = require("./routes/user");
+const progressRouter = require("./routes/progress");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -41,7 +42,7 @@ app.use("/user/register", authLimiter);
 // cors configuration for frontend connection
 app.use(
   cors({
-    origin: "http://localhost:5173", // only allowing frontend server
+    origin: ["http://localhost:5173", "http://localhost:5174"], // allow local Vite dev ports
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
@@ -54,6 +55,7 @@ app.use(express.json());
 app.use("/exercises", exerciseRouter);
 app.use("/workouts", workoutRouter);
 app.use("/user", userRouter);
+app.use("/progress", progressRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Workout Logger API", docs: "coming soon" });

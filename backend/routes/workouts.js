@@ -153,14 +153,38 @@ router.post("/", authorisation, async (req, res) => {
 });
 
 // GET request, "/workouts", allows a user to retrieve a list of their created workouts
+// optional query params: exerciseId
 router.get("/", authorisation, async (req, res) => {
   const userId = req.user.userId;
+  // accepted query params
+  const { exerciseId } = req.query;
+
+  // build database query
+  const where = {
+    userId: userId,
+  };
+
+  // validate exerciseId if provided
+  if (exerciseId !== undefined) {
+    const parsedExerciseId = parseInt(exerciseId);
+
+    if (Number.isNaN(parsedExerciseId) || parsedExerciseId < 1) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid exercise id",
+      });
+    }
+
+    where.workoutExercises = {
+      some: {
+        exerciseId: parsedExerciseId,
+      },
+    };
+  }
   try {
     // query database for all workouts by user, ordering by most recent, and including the exercises and sets
     const workouts = await prisma.workout.findMany({
-      where: {
-        userId: userId,
-      },
+      where: where,
       orderBy: {
         date: "desc",
       },
