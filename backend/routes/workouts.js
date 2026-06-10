@@ -153,18 +153,17 @@ router.post("/", authorisation, async (req, res) => {
 });
 
 // GET request, "/workouts", allows a user to retrieve a list of their created workouts
-// optional query params: exerciseId
+// optional query params: exerciseId, category
 router.get("/", authorisation, async (req, res) => {
   const userId = req.user.userId;
   // accepted query params
-  const { exerciseId } = req.query;
+  const { exerciseId, category } = req.query;
 
   // build database query
   const where = {
     userId: userId,
   };
-
-  // validate exerciseId if provided
+  // If exerciseId is provided, it takes priority over category because it is more specific.
   if (exerciseId !== undefined) {
     const parsedExerciseId = parseInt(exerciseId);
 
@@ -178,6 +177,14 @@ router.get("/", authorisation, async (req, res) => {
     where.workoutExercises = {
       some: {
         exerciseId: parsedExerciseId,
+      },
+    };
+  } else if (category !== undefined && category.trim() !== "") {
+    where.workoutExercises = {
+      some: {
+        exercise: {
+          category: category.trim().toLowerCase(),
+        },
       },
     };
   }

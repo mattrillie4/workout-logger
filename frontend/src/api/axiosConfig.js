@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000", // direct link to express server
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000", // direct link to express server
 });
 
 //  interceptor to automatically attach JWT to every request

@@ -42,7 +42,7 @@ app.use("/user/register", authLimiter);
 // cors configuration for frontend connection
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"], // allow local Vite dev ports
+    origin: [process.env.CLIENT_URL], // allow local Vite dev ports
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),

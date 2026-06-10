@@ -5,18 +5,27 @@ import {
   Button,
   CircularProgress,
   Divider,
+  IconButton,
   Paper,
   Stack,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import api from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
+// helper functions
 const formatWorkoutDate = (date) => {
   if (!date) return "-";
   return new Date(date).toLocaleDateString(); //format date if provided
+};
+
+const handleDeleteWorkout = () => {
+  return;
 };
 
 const Workouts = () => {
@@ -42,6 +51,23 @@ const Workouts = () => {
 
     fetchWorkouts();
   }, []);
+  // delete workout function for delete button
+  const handleDeleteWorkout = async (workoutId) => {
+    const confirmed = window.confirm("Delete this workout?");
+
+    if (!confirmed) {
+      return;
+    }
+    // pass given workout id to api delete endpoint
+    try {
+      await api.delete(`/workouts/${workoutId}`);
+      setWorkouts((currentWorkouts) =>
+        currentWorkouts.filter((workout) => workout.id !== workoutId),
+      );
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not delete workout.");
+    }
+  };
 
   return (
     <Box
@@ -118,18 +144,19 @@ const Workouts = () => {
                 key={workout.id}
                 elevation={0}
                 sx={{
-                  border: "1px solid #dde3ea",
+                  border: "1px solid #b2becd",
                   borderRadius: 2,
                   overflow: "hidden",
                 }}
               >
                 <Box sx={{ p: { xs: 2, md: 3 } }}>
                   <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    spacing={1}
+                    direction="row"
+                    spacing={1.5}
+                    alignItems="flex-start"
                     justifyContent="space-between"
                   >
-                    <Box>
+                    <Box sx={{ minWidth: 0 }}>
                       <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         {workout.name}
                       </Typography>
@@ -137,12 +164,43 @@ const Workouts = () => {
                         {formatWorkoutDate(workout.date)}
                       </Typography>
                     </Box>
-                    {workout.cardioDuration && (
-                      <Typography color="text.secondary">
-                        Cardio: {workout.cardioDuration} min
-                      </Typography>
-                    )}
+                    <Tooltip title="Delete workout" arrow>
+                      <IconButton
+                        color="error"
+                        aria-label="Delete workout"
+                        onClick={() => handleDeleteWorkout(workout.id)}
+                        sx={{
+                          flexShrink: 0,
+                          height: 36,
+                          ml: "auto",
+                          width: 36,
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Edit workout" arrow>
+                      <IconButton
+                        color="info"
+                        aria-label="Edit workout"
+                        sx={{
+                          flexShrink: 0,
+                          height: 36,
+                          ml: "auto",
+                          width: 36,
+                        }}
+                      >
+                        <EditIcon fontSise="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Stack>
+
+                  {workout.cardioDuration && (
+                    <Typography color="text.secondary">
+                      Cardio: {workout.cardioDuration} min
+                    </Typography>
+                  )}
 
                   {workout.notes && (
                     <Typography sx={{ mt: 2 }}>{workout.notes}</Typography>
