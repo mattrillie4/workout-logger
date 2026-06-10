@@ -142,7 +142,7 @@ const Profile = () => {
     <Box
       component="main"
       sx={{
-        bgcolor: "#f6f8fa",
+        bgcolor: "background.default",
         minHeight: "calc(100vh - 64px)",
         px: { xs: 2, md: 4 },
         py: { xs: 3, md: 5 },
@@ -172,7 +172,8 @@ const Profile = () => {
         <Paper
           elevation={0}
           sx={{
-            border: "1px solid #dde3ea",
+            border: "1px solid",
+            borderColor: "divider",
             borderRadius: 2,
             overflow: "hidden",
           }}

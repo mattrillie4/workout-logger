@@ -22,6 +22,7 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import SaveIcon from "@mui/icons-material/Save";
 import api from "../api/axiosConfig";
 import { useAuth } from "../context/useAuth";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const blankSet = () => ({
   reps: "",
@@ -42,6 +43,8 @@ const initialWorkout = () => ({
 });
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isLoggedIn } = useAuth();
   const [workout, setWorkout] = useState(initialWorkout);
   const [exerciseOptions, setExerciseOptions] = useState([]);
@@ -49,6 +52,10 @@ const Dashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // extract search params to update workout
+  const editWorkoutId = searchParams.get("editWorkoutId");
+  const isEditing = !!editWorkoutId; // flags if workout is currently being edited
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -71,6 +78,39 @@ const Dashboard = () => {
 
     fetchExercises();
   }, [isLoggedIn]);
+  // separate useEffect that fetches the data for updating a workout
+  useEffect(() => {
+    // return if not editing the workout
+    if (!isEditing) return;
+
+    const fetchWorkout = async () => {
+      try {
+        const response = await api.get(`workouts/${editWorkoutId}`);
+        const workoutToEdit = response.data.data;
+
+        // set the workout state with the current workout
+        setWorkout({
+          name: workoutToEdit.name,
+          date: workoutToEdit.date.slice(0, 10),
+          notes: workoutToEdit.notes || "",
+          cardioDuration: workoutToEdit.cardioDuration || "",
+          exercises: workoutToEdit.workoutExercises.map((workoutExercise) => ({
+            exerciseId: workoutExercise.exerciseId,
+            sets: workoutExercise.sets.map((set) => ({
+              reps: set.reps,
+              weight: set.weight,
+            })),
+          })),
+        }); // in the shape that the form expects
+      } catch (error) {
+        setError(
+          err.response?.data?.message || "Could not load exercise options.",
+        );
+      }
+    };
+    fetchWorkout();
+  }, [editWorkoutId]);
+
   //memoize exercises to avoid re-renders
   const exerciseMap = useMemo(() => {
     return exerciseOptions.reduce((map, exercise) => {
@@ -225,9 +265,17 @@ const Dashboard = () => {
     setIsSubmitting(true);
 
     try {
-      await api.post("/workouts", payload);
-      setWorkout(initialWorkout());
-      setSuccess("Workout saved successfully.");
+      if (isEditing) {
+        // send put request for updating
+        await api.put(`workouts/${editWorkoutId}`, payload);
+        setSuccess("Workout updated successfully.");
+        navigate("/workouts");
+      } else {
+        // post request for new workout
+        await api.post("/workouts", payload);
+        setWorkout(initialWorkout());
+        setSuccess("Workout saved successfully.");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Could not save this workout.");
     } finally {
@@ -239,7 +287,7 @@ const Dashboard = () => {
     <Box
       component="main"
       sx={{
-        bgcolor: "#f6f8fa",
+        bgcolor: "background.default",
         minHeight: "calc(100vh - 64px)",
         px: { xs: 2, md: 4 },
         py: { xs: 3, md: 5 },
@@ -248,10 +296,12 @@ const Dashboard = () => {
       <Box sx={{ maxWidth: 1100, mx: "auto" }}>
         <Stack spacing={1} sx={{ mb: 3 }}>
           <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
-            Log workout
+            {isEditing ? "Edit workout" : "Log workout"}
           </Typography>
           <Typography color="text.secondary">
-            Add exercises and sets as you train, then save the session.
+            {isEditing
+              ? "Update exercises, sets, and notes for this session."
+              : "Add exercises and sets as you train, then save the session."}{" "}
           </Typography>
         </Stack>
 
@@ -279,7 +329,8 @@ const Dashboard = () => {
           onSubmit={handleSubmit}
           elevation={0}
           sx={{
-            border: "1px solid #dde3ea",
+            border: "1px solid",
+            borderColor: "divider",
             borderRadius: 2,
             overflow: "hidden",
           }}
@@ -359,7 +410,7 @@ const Dashboard = () => {
               justifyContent="space-between"
             >
               <Stack direction="row" spacing={1} alignItems="center">
-                <FitnessCenterIcon color="primary" />
+                <FitnessCenterIcon color="secondary" />
                 <Typography
                   component="h2"
                   variant="h6"
@@ -394,7 +445,9 @@ const Dashboard = () => {
                     key={exerciseIndex}
                     elevation={0}
                     sx={{
-                      border: "1px solid #dde3ea",
+                      bgcolor: "#24282E",
+                      border: "1px solid",
+                      borderColor: "divider",
                       borderRadius: 1,
                       p: { xs: 2, md: 2.5 },
                     }}
@@ -544,12 +597,15 @@ const Dashboard = () => {
               type="button"
               variant="text"
               onClick={() => {
+                if (isEditing) {
+                  navigate("/workouts");
+                }
                 setWorkout(initialWorkout());
                 setError("");
                 setSuccess("");
               }}
             >
-              Reset
+              {isEditing ? "Cancel" : "Reset"}
             </Button>
             <Button
               type="submit"
@@ -557,7 +613,13 @@ const Dashboard = () => {
               startIcon={<SaveIcon />}
               disabled={isSubmitting || isLoadingExercises}
             >
-              {isSubmitting ? "Saving" : "Save workout"}
+              {isSubmitting
+                ? isEditing
+                  ? "Updating"
+                  : "Saving"
+                : isEditing
+                  ? "Update workout"
+                  : "Save workout"}
             </Button>
           </Stack>
         </Paper>

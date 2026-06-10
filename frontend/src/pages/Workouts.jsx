@@ -24,10 +24,6 @@ const formatWorkoutDate = (date) => {
   return new Date(date).toLocaleDateString(); //format date if provided
 };
 
-const handleDeleteWorkout = () => {
-  return;
-};
-
 const Workouts = () => {
   const navigate = useNavigate();
   const [workouts, setWorkouts] = useState([]);
@@ -73,7 +69,7 @@ const Workouts = () => {
     <Box
       component="main"
       sx={{
-        bgcolor: "#f6f8fa",
+        bgcolor: "background.default",
         minHeight: "calc(100vh - 64px)",
         px: { xs: 2, md: 4 },
         py: { xs: 3, md: 5 },
@@ -113,7 +109,8 @@ const Workouts = () => {
           <Paper
             elevation={0}
             sx={{
-              border: "1px solid #dde3ea",
+              border: "1px solid",
+              borderColor: "divider",
               borderRadius: 2,
               p: { xs: 2.5, md: 4 },
             }}
@@ -144,9 +141,15 @@ const Workouts = () => {
                 key={workout.id}
                 elevation={0}
                 sx={{
-                  border: "1px solid #b2becd",
+                  border: "1px solid",
+                  borderColor: "divider",
                   borderRadius: 2,
                   overflow: "hidden",
+                  transition: "border-color 160ms ease, transform 160ms ease",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    transform: "translateY(-1px)",
+                  },
                 }}
               >
                 <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -174,6 +177,10 @@ const Workouts = () => {
                           height: 36,
                           ml: "auto",
                           width: 36,
+                          bgcolor: "rgba(255, 77, 94, 0.08)",
+                          "&:hover": {
+                            bgcolor: "rgba(255, 77, 94, 0.18)",
+                          },
                         }}
                       >
                         <DeleteIcon fontSize="small" />
@@ -182,16 +189,22 @@ const Workouts = () => {
 
                     <Tooltip title="Edit workout" arrow>
                       <IconButton
-                        color="info"
+                        color="secondary"
                         aria-label="Edit workout"
                         sx={{
                           flexShrink: 0,
                           height: 36,
-                          ml: "auto",
                           width: 36,
+                          bgcolor: "rgba(182, 255, 59, 0.08)",
+                          "&:hover": {
+                            bgcolor: "rgba(182, 255, 59, 0.18)",
+                          },
                         }}
+                        onClick={() =>
+                          navigate(`/dashboard?editWorkoutId=${workout.id}`)
+                        }
                       >
-                        <EditIcon fontSise="small" />
+                        <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </Stack>

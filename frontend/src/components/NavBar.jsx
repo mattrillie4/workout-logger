@@ -3,11 +3,9 @@ import {
   AppBar,
   Box,
   Button,
-  IconButton,
   Toolbar,
   Typography,
 } from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import NoteIcon from "@mui/icons-material/Note";
@@ -28,23 +26,39 @@ export default function NavBar() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
+          <Button
             color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
             onClick={() => navigate("/dashboard")}
+            sx={{
+              alignItems: "center",
+              display: "flex",
+              gap: 1.25,
+              mr: 2,
+              px: 0,
+              "&:hover": {
+                bgcolor: "transparent",
+              },
+            }}
           >
-            <HomeIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, fontWeight: 700 }}
-          >
-            Workout Logger
-          </Typography>
+            <Box
+              component="img"
+              alt="Workout Logger logo"
+              src="/favicon.svg"
+              sx={{
+                boxShadow: "0 0 18px rgba(255, 90, 31, 0.32)",
+                height: 36,
+                width: 36,
+              }}
+            />
+            <Typography
+              variant="h6"
+              component="span"
+              sx={{ color: "primary.main", fontWeight: 800 }}
+            >
+              Workout Logger
+            </Typography>
+          </Button>
+          <Box sx={{ flexGrow: 1 }} />
 
           {isLoggedIn ? (
             <>

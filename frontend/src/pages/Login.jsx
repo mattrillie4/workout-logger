@@ -52,7 +52,7 @@ const Login = () => {
     <Box
       component="main"
       sx={{
-        bgcolor: "#f6f8fa",
+        bgcolor: "background.default",
         minHeight: "calc(100vh - 64px)",
         px: 2,
         py: { xs: 4, md: 7 },
@@ -63,7 +63,8 @@ const Login = () => {
         onSubmit={handleLogin}
         elevation={0}
         sx={{
-          border: "1px solid #dde3ea",
+          border: "1px solid",
+          borderColor: "divider",
           borderRadius: 2,
           maxWidth: 440,
           mx: "auto",
@@ -93,8 +94,8 @@ const Login = () => {
               maxLength={255}
               value={email}
               onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
+                setEmail(e.target.value);
+              }}
             />
             <TextField
               fullWidth
