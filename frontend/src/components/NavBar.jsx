@@ -1,14 +1,9 @@
 // imports
-import {
-  AppBar,
-  Box,
-  Button,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import NoteIcon from "@mui/icons-material/Note";
+import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
@@ -68,6 +63,13 @@ export default function NavBar() {
                 onClick={() => navigate("/workouts")}
               >
                 Workouts
+              </Button>
+              <Button
+                color="inherit"
+                startIcon={<FitnessCenterIcon />}
+                onClick={() => navigate("/exercises")}
+              >
+                Exercises
               </Button>
               <Button
                 color="inherit"

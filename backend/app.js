@@ -12,6 +12,27 @@ const progressRouter = require("./routes/progress");
 const app = express();
 const port = process.env.PORT || 3000;
 
+const allowedOrigins = (
+  process.env.CLIENT_URL || "http://localhost:5173,http://localhost:5174"
+)
+  .split(",")
+  .map((origin) => origin.trim());
+
+// cors configuration for frontend connection
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 // setup rate limits
 // general limit
 const generalLimiter = rateLimit({
@@ -38,15 +59,6 @@ const authLimiter = rateLimit({
 // apply to both auth routes, this time only 10 requests per 15 min
 app.use("/user/login", authLimiter);
 app.use("/user/register", authLimiter);
-
-// cors configuration for frontend connection
-app.use(
-  cors({
-    origin: [process.env.CLIENT_URL], // allow local Vite dev ports
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
 
 app.use(morgan("dev"));
 app.use(express.json());

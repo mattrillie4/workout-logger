@@ -102,7 +102,7 @@ const Dashboard = () => {
             })),
           })),
         }); // in the shape that the form expects
-      } catch (error) {
+      } catch (err) {
         setError(
           err.response?.data?.message || "Could not load exercise options.",
         );
