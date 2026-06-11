@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosConfig";
+//mui imports
 import {
   Alert,
   Box,
@@ -11,6 +12,15 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -32,6 +42,7 @@ const Exercises = () => {
   const [saving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // fetch exercise data on load
   useEffect(() => {
@@ -50,6 +61,7 @@ const Exercises = () => {
     };
     fetchExercises();
   }, []);
+
   // helper function to archive/delete custom exercise
   const handleDeleteExercise = async (exerciseId) => {
     //double-check if user wants to delete
@@ -73,6 +85,32 @@ const Exercises = () => {
       setError(err.response?.data?.message || "Could not archive exercise.");
     }
   };
+  // helper function to create a new custom exercise
+  const handleCreateExercise = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsSaving(true);
+
+    // send request to database
+    try {
+      const response = await api.post("/exercises", { name, category });
+
+      // re-render with new state
+      setExercises((currentExercises) => [
+        ...currentExercises,
+        response.data.data,
+      ]);
+      setName("");
+      setCategory("");
+      setIsCreateOpen(false);
+      setSuccess("Exercise created.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not create exercise.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return (
     <Box
       component="main"
@@ -92,6 +130,61 @@ const Exercises = () => {
             Browse default exercises and your custom movement library.
           </Typography>
         </Stack>
+        <Button sx={{ padding: 2 }} onClick={() => setIsCreateOpen(true)}>
+          Create Exercise
+        </Button>
+        <Dialog
+          open={isCreateOpen}
+          onClose={() => !saving && setIsCreateOpen(false)}
+          fullWidth
+          maxWidth="xs"
+        >
+          <Box component="form" onSubmit={handleCreateExercise}>
+            <DialogTitle>Create exercise</DialogTitle>
+
+            <DialogContent>
+              <Stack spacing={2} sx={{ pt: 1 }}>
+                <TextField
+                  label="Exercise name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  autoFocus
+                  fullWidth
+                  required
+                />
+
+                <FormControl fullWidth required>
+                  <InputLabel id="exercise-category-label">Category</InputLabel>
+                  <Select
+                    labelId="exercise-category-label"
+                    label="Category"
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                  >
+                    <MenuItem value="chest">Chest</MenuItem>
+                    <MenuItem value="back">Back</MenuItem>
+                    <MenuItem value="legs">Legs</MenuItem>
+                    <MenuItem value="shoulders">Shoulders</MenuItem>
+                    <MenuItem value="arms">Arms</MenuItem>
+                    <MenuItem value="core">Core</MenuItem>
+                    <MenuItem value="cardio">Cardio</MenuItem>
+                    <MenuItem value="full body">Full Body</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </DialogContent>
+
+            <DialogActions>
+              <Button onClick={() => setIsCreateOpen(false)} disabled={saving}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="contained" disabled={saving}>
+                {saving ? "Creating..." : "Create"}
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
