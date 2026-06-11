@@ -26,6 +26,7 @@ I'm currently working through the following roadmap:
 - [ ] **History Dashboard:** A dedicated view to look back at previous sessions.
 - [ ] **Data Validation:** Integrating Zod on the backend to ensure data integrity.
 - [ ] **Progress Tracking:** Charts to visualize strength gains over time.
+- [ ] **Unit Preference** Currently app uses kg only, aiming to add functionality for other measurement systems.
 
 ---
 *Developed as part of my Year 2, Semester 1 university studies. Focused on clean code, scalable database design, and a smooth user experience.*
