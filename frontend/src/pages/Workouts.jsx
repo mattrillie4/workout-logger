@@ -17,6 +17,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import api from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
+import WorkoutFilters from "../components/WorkoutFilters";
 
 // helper functions
 const formatWorkoutDate = (date) => {
@@ -24,29 +25,109 @@ const formatWorkoutDate = (date) => {
   return new Date(date).toLocaleDateString(); //format date if provided
 };
 
+const defaultFilters = {
+  search: "",
+  exerciseId: "",
+  category: "",
+  from: "",
+  to: "",
+  sort: "date_desc",
+};
+
+const buildWorkoutQuery = (filters) => {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      params.set(key, value);
+    }
+  });
+
+  return params.toString();
+};
+
 const Workouts = () => {
   const navigate = useNavigate();
   const [workouts, setWorkouts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [exerciseOptions, setExerciseOptions] = useState([]);
+  const [filters, setFilters] = useState(defaultFilters);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchWorkouts = async () => {
-      setIsLoading(true);
-      setError("");
+  const fetchWorkouts = async (nextFilters = filters) => {
+    setIsLoading(true);
+    setError("");
 
+    try {
+      const query = buildWorkoutQuery(nextFilters);
+      const response = await api.get(query ? `/workouts?${query}` : "/workouts");
+      setWorkouts(response.data.data || []);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not load workouts.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchInitialWorkouts = async () => {
       try {
         const response = await api.get("/workouts");
-        setWorkouts(response.data.data || []);
+        if (isMounted) {
+          setWorkouts(response.data.data || []);
+        }
       } catch (err) {
-        setError(err.response?.data?.message || "Could not load workouts.");
+        if (isMounted) {
+          setError(err.response?.data?.message || "Could not load workouts.");
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchWorkouts();
+    fetchInitialWorkouts();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  useEffect(() => {
+    const fetchExerciseOptions = async () => {
+      try {
+        const response = await api.get("/exercises/me");
+        setExerciseOptions(response.data.data || []);
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Could not load exercise filters.",
+        );
+      }
+    };
+
+    fetchExerciseOptions();
+  }, []);
+
+  const updateFilter = (field, value) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [field]: value,
+    }));
+  };
+
+  const applyFilters = (event) => {
+    event.preventDefault();
+    fetchWorkouts(filters);
+  };
+
+  const clearFilters = () => {
+    setFilters(defaultFilters);
+    fetchWorkouts(defaultFilters);
+  };
+
   // delete workout function for delete button
   const handleDeleteWorkout = async (workoutId) => {
     const confirmed = window.confirm("Delete this workout?");
@@ -76,7 +157,7 @@ const Workouts = () => {
       }}
     >
       <Box sx={{ maxWidth: 1100, mx: "auto" }}>
-        <Stack spacing={1.5} alignItems="flex-start" sx={{ mb: 3 }}>
+        <Stack spacing={1.5} sx={{ alignItems: "flex-start", mb: 3 }}>
           <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
             Workouts
           </Typography>
@@ -100,8 +181,17 @@ const Workouts = () => {
           </Alert>
         )}
 
+        <WorkoutFilters
+          filters={filters}
+          exerciseOptions={exerciseOptions}
+          isLoading={isLoading}
+          onChange={updateFilter}
+          onApply={applyFilters}
+          onClear={clearFilters}
+        />
+
         {isLoading ? (
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
             <CircularProgress size={22} />
             <Typography color="text.secondary">Loading workouts</Typography>
           </Stack>
@@ -115,13 +205,13 @@ const Workouts = () => {
               p: { xs: 2.5, md: 4 },
             }}
           >
-            <Stack spacing={1.5} alignItems="flex-start">
+            <Stack spacing={1.5} sx={{ alignItems: "flex-start" }}>
               <FitnessCenterIcon color="primary" />
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                No workouts logged yet
+                No workouts found
               </Typography>
               <Typography color="text.secondary">
-                Once you save a workout, it will appear here.
+                Try adjusting your filters or log a new workout.
               </Typography>
               <Button
                 variant="outlined"
@@ -156,8 +246,10 @@ const Workouts = () => {
                   <Stack
                     direction="row"
                     spacing={1.5}
-                    alignItems="flex-start"
-                    justifyContent="space-between"
+                    sx={{
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                    }}
                   >
                     <Box sx={{ minWidth: 0 }}>
                       <Typography variant="h6" sx={{ fontWeight: 700 }}>

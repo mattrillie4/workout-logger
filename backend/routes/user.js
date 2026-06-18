@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const argon2 = require("argon2");
 const { PrismaClient } = require("@prisma/client");
 const authorisation = require("../middleware/authorisation");
+const { z } = require("zod");
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -187,22 +188,26 @@ router.post("/profile", authorisation, async (req, res) => {
     height_cm === undefined
       ? undefined
       : height_cm === null || height_cm === ""
-      ? null
-      : parseFloat(height_cm);
+        ? null
+        : parseFloat(height_cm);
   const parsedWeight =
     weight_kg === undefined
       ? undefined
       : weight_kg === null || weight_kg === ""
-      ? null
-      : parseFloat(weight_kg);
+        ? null
+        : parseFloat(weight_kg);
   const parsedGender =
-    gender === undefined ? undefined : gender ? gender.trim().toLowerCase() : null;
+    gender === undefined
+      ? undefined
+      : gender
+        ? gender.trim().toLowerCase()
+        : null;
   const parsedDateOfBirth =
     date_of_birth === undefined
       ? undefined
       : date_of_birth
-      ? new Date(date_of_birth)
-      : null;
+        ? new Date(date_of_birth)
+        : null;
 
   // input validation
   if (

@@ -427,6 +427,15 @@ const Dashboard = () => {
               >
                 Add exercise
               </Button>
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => {
+                  navigate("/exercises");
+                }}
+              >
+                Create Custom Exercise
+              </Button>
             </Stack>
 
             {isLoadingExercises ? (
@@ -539,7 +548,7 @@ const Dashboard = () => {
                               <TextField
                                 fullWidth
                                 required
-                                label="Weight"
+                                label="Weight (kg)"
                                 type="number"
                                 value={set.weight}
                                 onChange={(event) =>

@@ -153,18 +153,54 @@ router.post("/", authorisation, async (req, res) => {
 });
 
 // GET request, "/workouts", allows a user to retrieve a list of their created workouts
-// optional query params: exerciseId, category
+// optional query params: exerciseId, category, search, from, to, sort
 router.get("/", authorisation, async (req, res) => {
   const userId = req.user.userId;
   // accepted query params
-  const { exerciseId, category } = req.query;
+  const { search, exerciseId, category, from, to, sort } = req.query;
 
   // build database query
   const where = {
     userId: userId,
+    AND: [],
   };
-  // If exerciseId is provided, it takes priority over category because it is more specific.
+  // INPUT VALIDATION
+  //
+  if (search !== undefined && search.trim() !== "") {
+    const trimmedSearch = search.trim();
+    // push onto existing array of filters
+    // search criteria will apply to relevant data (name, notes and exercises)
+    where.AND.push({
+      OR: [
+        {
+          name: {
+            contains: trimmedSearch,
+            mode: "insensitive",
+          },
+        },
+        {
+          notes: {
+            contains: trimmedSearch,
+            mode: "insensitive",
+          },
+        },
+        {
+          workoutExercises: {
+            some: {
+              exercise: {
+                name: {
+                  contains: trimmedSearch,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+  }
   if (exerciseId !== undefined) {
+    // If exerciseId is provided, it takes priority over category because it is more specific.
     const parsedExerciseId = parseInt(exerciseId);
 
     if (Number.isNaN(parsedExerciseId) || parsedExerciseId < 1) {
@@ -174,27 +210,80 @@ router.get("/", authorisation, async (req, res) => {
       });
     }
 
-    where.workoutExercises = {
-      some: {
-        exerciseId: parsedExerciseId,
-      },
-    };
-  } else if (category !== undefined && category.trim() !== "") {
-    where.workoutExercises = {
-      some: {
-        exercise: {
-          category: category.trim().toLowerCase(),
+    where.AND.push({
+      workoutExercises: {
+        some: {
+          exerciseId: parsedExerciseId,
         },
       },
-    };
+    });
   }
+  if (category !== undefined && category.trim() !== "") {
+    where.AND.push({
+      workoutExercises: {
+        some: {
+          exercise: {
+            category: category.trim().toLowerCase(),
+          },
+        },
+      },
+    });
+  }
+  // from and to validation, filters between dates
+  if (from !== undefined && from.trim() !== "") {
+    //format from date properly
+    const fromDate = new Date(from);
+    // validate
+    if (Number.isNaN(fromDate.getTime())) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid from date",
+      });
+    }
+    where.AND.push({
+      date: {
+        gte: fromDate,
+      },
+    });
+  }
+  if (to !== undefined && to.trim() !== "") {
+    // format to date properly
+    const toDate = new Date(to);
+    //validate
+    if (Number.isNaN(toDate.getTime())) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid to date",
+      });
+    }
+    where.AND.push({
+      date: {
+        lte: toDate,
+      },
+    });
+  }
+  // if no params supplied, delete AND structure
+  if (where.AND.length === 0) {
+    delete where.AND;
+  }
+  // sort validation
+  let orderBy = {
+    date: "desc", // default ordering
+  };
+  // if sort provided, change orderBy accordingly
+  if (sort == "date_asc") {
+    orderBy = { date: "asc" };
+  } else if (sort == "name_asc") {
+    orderBy = { name: "asc" };
+  } else if (sort == "name_desc") {
+    orderBy = { name: "desc" };
+  }
+
   try {
     // query database for all workouts by user, ordering by most recent, and including the exercises and sets
     const workouts = await prisma.workout.findMany({
       where: where,
-      orderBy: {
-        date: "desc",
-      },
+      orderBy,
       include: {
         workoutExercises: {
           orderBy: {

@@ -7,10 +7,12 @@ import Profile from "./pages/Profile";
 import Workouts from "./pages/Workouts";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Exercises from "./pages/Exercises";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <NavBar />
       <Routes>
         <Route path="/login" element={<Login />} />
