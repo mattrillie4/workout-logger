@@ -42,11 +42,38 @@ const initialWorkout = () => ({
   exercises: [blankWorkoutExercise()],
 });
 
+const DRAFT_WORKOUT_KEY = "draftWorkout";
+
+const hasWorkoutDraftContent = (workout) => {
+  return (
+    workout.name.trim() ||
+    workout.notes.trim() ||
+    workout.cardioDuration ||
+    workout.exercises.some(
+      (exercise) =>
+        exercise.exerciseId ||
+        exercise.sets.some((set) => set.reps || set.weight),
+    )
+  );
+};
+
+const getInitialWorkoutDraft = () => {
+  const savedDraft = localStorage.getItem(DRAFT_WORKOUT_KEY);
+  if (!savedDraft) return initialWorkout();
+
+  try {
+    return JSON.parse(savedDraft);
+  } catch {
+    localStorage.removeItem(DRAFT_WORKOUT_KEY);
+    return initialWorkout();
+  }
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isLoggedIn } = useAuth();
-  const [workout, setWorkout] = useState(initialWorkout);
+  const [workout, setWorkout] = useState(getInitialWorkoutDraft);
   const [exerciseOptions, setExerciseOptions] = useState([]);
   const [isLoadingExercises, setIsLoadingExercises] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,7 +136,17 @@ const Dashboard = () => {
       }
     };
     fetchWorkout();
-  }, [editWorkoutId]);
+  }, [editWorkoutId, isEditing]);
+
+  useEffect(() => {
+    if (isEditing) return;
+
+    if (hasWorkoutDraftContent(workout)) {
+      localStorage.setItem(DRAFT_WORKOUT_KEY, JSON.stringify(workout));
+    } else {
+      localStorage.removeItem(DRAFT_WORKOUT_KEY);
+    }
+  }, [workout, isEditing]);
 
   //memoize exercises to avoid re-renders
   const exerciseMap = useMemo(() => {
@@ -273,6 +310,7 @@ const Dashboard = () => {
       } else {
         // post request for new workout
         await api.post("/workouts", payload);
+        localStorage.removeItem(DRAFT_WORKOUT_KEY);
         setWorkout(initialWorkout());
         setSuccess("Workout saved successfully.");
       }
@@ -609,6 +647,7 @@ const Dashboard = () => {
                 if (isEditing) {
                   navigate("/workouts");
                 }
+                localStorage.removeItem(DRAFT_WORKOUT_KEY);
                 setWorkout(initialWorkout());
                 setError("");
                 setSuccess("");

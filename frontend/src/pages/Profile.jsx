@@ -50,6 +50,12 @@ const profileToForm = (profile) => ({
   gender: profile?.gender ?? "",
 });
 
+const emptySummary = {
+  totalWorkouts: 0,
+  workoutsLastSevenDays: 0,
+  totalSets: 0,
+};
+
 const Profile = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
@@ -61,6 +67,7 @@ const Profile = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [summary, setSummary] = useState(emptySummary);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -72,12 +79,15 @@ const Profile = () => {
       setError("");
 
       try {
-        const [userResponse, profileResponse] = await Promise.all([
-          api.get("/user/me"),
-          api.get("/user/profile"),
-        ]);
+        const [userResponse, profileResponse, summaryResponse] =
+          await Promise.all([
+            api.get("/user/me"),
+            api.get("/user/profile"),
+            api.get("/progress/summary"),
+          ]);
         setUser(userResponse.data.data);
         setProfile(profileResponse.data.data);
+        setSummary(summaryResponse.data.data);
         setProfileForm(profileToForm(profileResponse.data.data));
       } catch (err) {
         setError(err.response?.data?.message || "Could not load profile.");
@@ -185,7 +195,11 @@ const Profile = () => {
               </Typography>
 
               {isLoading ? (
-                <Stack direction="row" spacing={1.5} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  sx={{ alignItems: "center" }}
+                >
                   <CircularProgress size={22} />
                   <Typography color="text.secondary">
                     Loading profile
@@ -219,7 +233,11 @@ const Profile = () => {
             <Divider />
 
             {isLoading ? (
-              <Stack direction="row" spacing={1.5} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={1.5}
+                sx={{ alignItems: "center" }}
+              >
                 <CircularProgress size={22} />
                 <Typography color="text.secondary">Loading profile</Typography>
               </Stack>
@@ -232,9 +250,11 @@ const Profile = () => {
                 <Stack
                   direction={{ xs: "column", sm: "row" }}
                   spacing={1.5}
-                  alignItems={{ xs: "stretch", sm: "center" }}
-                  justifyContent="space-between"
-                  sx={{ mb: 2 }}
+                  sx={{
+                    alignItems: { xs: "stretch", sm: "center" },
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
                 >
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
                     Body Metrics
@@ -375,6 +395,72 @@ const Profile = () => {
 
             <Box sx={{ p: { xs: 2, md: 3 } }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                Training Summary
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gap: 2,
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(3, minmax(0, 1fr))",
+                  },
+                }}
+              >
+                <SummaryField
+                  label="Total Workouts"
+                  value={summary.totalWorkouts}
+                />
+                <SummaryField
+                  label="Last 7 Days"
+                  value={summary.workoutsLastSevenDays}
+                />
+                <SummaryField
+                  label="Favorite category"
+                  value={capitalise(summary.mostTrainedCategory)}
+                />
+                <SummaryField label="Total Sets" value={summary.totalSets} />
+                <SummaryField
+                  label="Total Cardio"
+                  value={
+                    <span>
+                      {summary.totalCardioMinutes}
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "#888",
+                          marginLeft: 4,
+                        }}
+                      >
+                        minutes
+                      </span>
+                    </span>
+                  }
+                />
+                <SummaryField
+                  label="Total Volume"
+                  value={
+                    <span>
+                      {summary.totalVolume}
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "#888",
+                          marginLeft: 4,
+                        }}
+                      >
+                        kg
+                      </span>
+                    </span>
+                  }
+                />
+              </Box>
+            </Box>
+
+            <Divider />
+
+            <Box sx={{ p: { xs: 2, md: 3 } }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                 Training Profile
               </Typography>
               <Box
@@ -406,7 +492,25 @@ const ProfileField = ({ label, value }) => (
       {label}
     </Typography>
     <Typography sx={{ fontWeight: 600, overflowWrap: "anywhere" }}>
-      {value}
+      {value ?? "-"}
+    </Typography>
+  </Box>
+);
+
+const SummaryField = ({ label, value }) => (
+  <Box
+    sx={{
+      border: "1px solid",
+      borderColor: "divider",
+      borderRadius: 1,
+      p: 2,
+    }}
+  >
+    <Typography variant="body2" color="text.secondary">
+      {label}
+    </Typography>
+    <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+      {value ?? 0}
     </Typography>
   </Box>
 );
