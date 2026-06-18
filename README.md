@@ -14,6 +14,7 @@ The "plumbing" of the app is solid and ready for data:
 - **Database Engine:** A PostgreSQL schema designed to handle complex relationships (Workouts → Exercises → Sets).
 - **API:** A Node/Express backend that handles everything from exercise retrieval to multi-set workout logging.
 - **Frontend Connection:** A React (Vite) interface that is now successfully talking to the backend via CORS.
+- **Frontend Functionality** The React frontend has a theme, and handles most if not all of the available API endpoints.
 
 ### 🛠 The Tech Stack
 
@@ -27,8 +28,8 @@ The "plumbing" of the app is solid and ready for data:
 
 I'm currently working through the following roadmap:
 
-- [ ] **Dynamic Workout Form:** A MUI-based form to add exercises and sets on the fly.
-- [ ] **History Dashboard:** A dedicated view to look back at previous sessions.
+- [x] **Dynamic Workout Form:** A MUI-based form to add exercises and sets on the fly.
+- [x] **History Dashboard:** A dedicated view to look back at previous sessions.
 - [ ] **Data Validation:** Integrating Zod on the backend to ensure data integrity.
 - [ ] **Progress Tracking:** Charts to visualize strength gains over time.
 - [ ] **Unit Preference** Currently app uses kg only, aiming to add functionality for other measurement systems.
