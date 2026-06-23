@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NavBar from "./components/NavBar";
 import Dashboard from "./pages/Dashboard";
+import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import Workouts from "./pages/Workouts";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -30,6 +31,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Exercises />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress/:exerciseId"
+          element={
+            <ProtectedRoute>
+              <Progress />
             </ProtectedRoute>
           }
         />

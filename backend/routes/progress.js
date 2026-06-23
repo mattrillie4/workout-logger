@@ -176,11 +176,22 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         },
       },
     });
+    const totalSets = await prisma.set.count({
+      where: {
+        workoutExercise: {
+          exerciseId: exerciseId,
+          workout: {
+            userId: userId,
+          },
+        },
+      },
+    });
     res.status(200).json({
       error: false,
       data: {
         exercise,
         bestWeight,
+        totalSets,
       },
     });
   } catch (error) {

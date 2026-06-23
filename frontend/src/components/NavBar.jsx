@@ -4,6 +4,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import NoteIcon from "@mui/icons-material/Note";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
@@ -70,6 +71,13 @@ export default function NavBar() {
                 onClick={() => navigate("/exercises")}
               >
                 Exercises
+              </Button>
+              <Button
+                color="inherit"
+                startIcon={<ShowChartIcon />}
+                onClick={() => navigate("/progress")}
+              >
+                Progress
               </Button>
               <Button
                 color="inherit"
