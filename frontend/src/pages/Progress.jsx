@@ -454,6 +454,14 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
               </Typography>
             </Box>
             <Chip
+              color="primary"
+              label={`Last trained: ${
+                exerciseProgress.lastTrained?.date
+                  ? formatDate(exerciseProgress.lastTrained.date)
+                  : "Not yet"
+              }`}
+            />
+            <Chip
               color="secondary"
               icon={<TrendingUpIcon />}
               label={`${exerciseProgress.totalSets || 0} logged sets`}

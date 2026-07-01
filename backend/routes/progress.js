@@ -151,7 +151,19 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         message: "Exercise does not exist",
       });
     }
-
+    // find when the user last trained the given exercise
+    const lastTrained = await prisma.workout.findFirst({
+      where: {
+        userId: userId,
+        workoutExercises: { some: { exerciseId: exerciseId } },
+      },
+      orderBy: {
+        date: "desc",
+      },
+      select: {
+        date: true,
+      },
+    });
     const bestWeight = await prisma.set.findFirst({
       where: {
         workoutExercise: {
@@ -192,6 +204,7 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         exercise,
         bestWeight,
         totalSets,
+        lastTrained,
       },
     });
   } catch (error) {

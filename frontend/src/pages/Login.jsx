@@ -23,7 +23,7 @@ const Login = () => {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, authMessage, setAuthMessage } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -80,7 +80,11 @@ const Login = () => {
               Sign in to continue logging your workouts.
             </Typography>
           </Stack>
-
+          {authMessage && (
+            <Alert severity="warning" onClose={() => setAuthMessage("")}>
+              {authMessage}
+            </Alert>
+          )}
           {error && <Alert severity="error">{error}</Alert>}
           {success && (
             <Alert severity="success">Login successful! Redirecting...</Alert>
