@@ -27,6 +27,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 const blankSet = () => ({
   reps: "",
   weight: "",
+  weightUnit: "kg",
 });
 
 const blankWorkoutExercise = () => ({
@@ -126,6 +127,7 @@ const Dashboard = () => {
             sets: workoutExercise.sets.map((set) => ({
               reps: set.reps,
               weight: set.weight,
+              weightUnit: set.weightUnit || "kg",
             })),
           })),
         }); // in the shape that the form expects
@@ -295,6 +297,7 @@ const Dashboard = () => {
         sets: exercise.sets.map((set) => ({
           reps: set.reps,
           weight: set.weight,
+          weightUnit: set.weightUnit,
         })),
       })),
     };
@@ -553,7 +556,7 @@ const Dashboard = () => {
                               gap: 1.5,
                               gridTemplateColumns: {
                                 xs: "1fr 1fr",
-                                sm: "120px minmax(0, 1fr) minmax(0, 1fr) 56px",
+                                sm: "80px minmax(0, 1fr) minmax(0, 1fr) 100px 48px",
                               },
                             }}
                           >
@@ -586,7 +589,7 @@ const Dashboard = () => {
                               <TextField
                                 fullWidth
                                 required
-                                label="Weight (kg)"
+                                label="Weight"
                                 type="number"
                                 value={set.weight}
                                 onChange={(event) =>
@@ -599,6 +602,22 @@ const Dashboard = () => {
                                 }
                                 slotProps={{ htmlInput: { min: 0, step: 0.5 } }}
                               />
+                            </Box>
+                            <Box>
+                              <Select
+                                value={set.weightUnit || "kg"}
+                                onChange={(event) =>
+                                  updateSet(
+                                    exerciseIndex,
+                                    setIndex,
+                                    "weightUnit",
+                                    event.target.value,
+                                  )
+                                }
+                              >
+                                <MenuItem value="kg">kg</MenuItem>
+                                <MenuItem value="lb">lb</MenuItem>
+                              </Select>
                             </Box>
                             <Box>
                               <IconButton

@@ -486,7 +486,7 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
           <ProgressMetric
             label="Best Weight"
             value={formatNumber(bestWeight?.weight)}
-            unit="kg"
+            unit={bestWeight?.weightUnit || "kg"}
             caption={
               bestWeight
                 ? `${bestWeight.reps} reps${bestWeightWorkout?.date ? ` on ${formatDate(bestWeightWorkout.date)}` : ""}`

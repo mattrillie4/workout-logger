@@ -178,6 +178,7 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
       },
       select: {
         weight: true,
+        weightUnit: true,
         reps: true,
         workoutExercise: {
           select: {

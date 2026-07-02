@@ -72,6 +72,7 @@ const validateWorkoutBody = ({
     for (const set of exercise.sets) {
       const reps = parseInt(set.reps);
       const weight = parseFloat(set.weight);
+      const weightUnit = set.weightUnit;
 
       if (
         Number.isNaN(reps) ||
@@ -80,6 +81,10 @@ const validateWorkoutBody = ({
         weight < 0
       ) {
         return "Each set must have valid reps and weight";
+      }
+      const validUnits = ["kg", "lb"];
+      if (set.weightUnit && !validUnits.includes(set.weightUnit)) {
+        return "Each set must use a valid weight unit";
       }
     }
   }
@@ -124,6 +129,7 @@ router.post("/", authorisation, async (req, res) => {
               create: ex.sets.map((set, setIndex) => ({
                 reps: parseInt(set.reps),
                 weight: parseFloat(set.weight),
+                weightUnit: set.weightUnit || "kg", // use kg as default
                 order: setIndex + 1,
               })),
             },
@@ -477,6 +483,7 @@ router.put("/:id", authorisation, async (req, res) => {
                 create: ex.sets.map((set, setIndex) => ({
                   reps: parseInt(set.reps),
                   weight: parseFloat(set.weight),
+                  weightUnit: set.weightUnit || "kg",
                   order: setIndex + 1,
                 })),
               },

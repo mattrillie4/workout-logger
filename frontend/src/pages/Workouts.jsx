@@ -60,7 +60,9 @@ const Workouts = () => {
 
     try {
       const query = buildWorkoutQuery(nextFilters);
-      const response = await api.get(query ? `/workouts?${query}` : "/workouts");
+      const response = await api.get(
+        query ? `/workouts?${query}` : "/workouts",
+      );
       setWorkouts(response.data.data || []);
     } catch (err) {
       setError(err.response?.data?.message || "Could not load workouts.");
@@ -322,7 +324,10 @@ const Workouts = () => {
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {workoutExercise.sets
-                          ?.map((set) => `${set.reps} reps at ${set.weight} kg`)
+                          ?.map(
+                            (set) =>
+                              `${set.reps} reps at ${set.weight} ${set.weightUnit || "kg"}`,
+                          )
                           .join(" | ")}
                       </Typography>
                     </Box>
