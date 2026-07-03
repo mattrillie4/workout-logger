@@ -5,6 +5,11 @@ const authorisation = require("../middleware/authorisation");
 
 const prisma = new PrismaClient();
 
+// helper function to convert lb to kg
+const toKg = (weight, unit) => {
+  if (unit === "lb") return weight * 0.45359237;
+  return weight;
+};
 // GET request, returns overarching summary information about a users workout history
 // Things like total workouts, workouts this week, sets, etc.
 router.get("/summary", authorisation, async (req, res) => {
@@ -63,11 +68,13 @@ router.get("/summary", authorisation, async (req, res) => {
       select: {
         reps: true,
         weight: true,
+        weightUnit: true,
       },
     });
     // sum all entries
-    const totalVolume = sets.reduce((sum, set) => {
-      return sum + set.reps * set.weight;
+    const totalVolumeKg = sets.reduce((sum, set) => {
+      const weightKg = toKg(set.weight, set.weightUnit);
+      return sum + set.reps * weightKg;
     }, 0);
 
     // find most trained category
@@ -107,7 +114,7 @@ router.get("/summary", authorisation, async (req, res) => {
         workoutsLastSevenDays,
         totalSets,
         totalCardioMinutes,
-        totalVolume,
+        totalVolumeKg,
         mostTrainedCategory,
       },
     });
@@ -164,7 +171,7 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         date: true,
       },
     });
-    const bestWeight = await prisma.set.findFirst({
+    const exerciseSets = await prisma.set.findMany({
       where: {
         workoutExercise: {
           exerciseId: exerciseId,
@@ -172,9 +179,6 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
             userId: userId,
           },
         },
-      },
-      orderBy: {
-        weight: "desc",
       },
       select: {
         weight: true,
@@ -189,6 +193,18 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         },
       },
     });
+
+    const bestWeight = exerciseSets.reduce((bestSet, currentSet) => {
+      if (!bestSet) {
+        return currentSet;
+      }
+
+      return toKg(currentSet.weight, currentSet.weightUnit) >
+        toKg(bestSet.weight, bestSet.weightUnit)
+        ? currentSet
+        : bestSet;
+    }, null);
+
     const totalSets = await prisma.set.count({
       where: {
         workoutExercise: {

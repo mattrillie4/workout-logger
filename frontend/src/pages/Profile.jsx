@@ -42,6 +42,17 @@ const formatDateInput = (date) => {
   if (!date) return "";
   return new Date(date).toISOString().slice(0, 10);
 };
+
+const formatNumber = (value) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "0";
+  }
+
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+};
+
 //formats api response
 const profileToForm = (profile) => ({
   height_cm: profile?.height_cm ?? "",
@@ -441,7 +452,7 @@ const Profile = () => {
                   label="Total Volume"
                   value={
                     <span>
-                      {summary.totalVolume}
+                      {formatNumber(summary.totalVolumeKg)}
                       <span
                         style={{
                           fontSize: "0.8rem",

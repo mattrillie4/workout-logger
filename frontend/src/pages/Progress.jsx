@@ -27,7 +27,7 @@ const emptySummary = {
   workoutsLastSevenDays: 0,
   totalSets: 0,
   totalCardioMinutes: 0,
-  totalVolume: 0,
+  totalVolumeKg: 0,
   mostTrainedCategory: null,
 };
 // format helper functions
@@ -50,7 +50,7 @@ const formatNumber = (value) => {
   }
 
   return new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: 1,
+    maximumFractionDigits: 0,
   }).format(Number(value));
 };
 
@@ -247,7 +247,7 @@ const Progress = () => {
                 <SummaryMetric label="Total Sets" value={summary.totalSets} />
                 <SummaryMetric
                   label="Total Volume"
-                  value={formatNumber(summary.totalVolume)}
+                  value={formatNumber(summary.totalVolumeKg)}
                   unit="kg"
                 />
                 <SummaryMetric
@@ -569,7 +569,8 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
           {bestWeight ? (
             <>
               <Typography sx={{ fontWeight: 700 }}>
-                {formatNumber(bestWeight.weight)} kg x {bestWeight.reps}
+                {formatNumber(bestWeight.weight)} {bestWeight.weightUnit || "kg"}{" "}
+                x {bestWeight.reps}
               </Typography>
               <Typography color="text.secondary">
                 {bestWeightWorkout?.name || "Workout"}
