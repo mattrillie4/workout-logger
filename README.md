@@ -2,19 +2,19 @@
 
 A clean, functional full-stack application for tracking gym sessions. I'm building this to replace messy notes apps with a structured way to log exercises, sets, and weight progress.
 
-This project is currently a **work in progress** as I build out the core features.
+This project is currently a **work in progress** as I build out more features and polish the app.
 
 ---
 
 ### 🚀 What it does (so far)
 
-The "plumbing" of the app is solid and ready for data:
-
-- **Secure Auth:** Fuslly implemented user registration and login using JWT.
+- **Secure Auth:** Fully implemented user registration and login using JWT.
 - **Database Engine:** A PostgreSQL schema designed to handle complex relationships (Workouts → Exercises → Sets).
 - **API:** A Node/Express backend that handles everything from exercise retrieval to multi-set workout logging.
 - **Frontend Connection:** A React (Vite) interface that is now successfully talking to the backend via CORS.
-- **Frontend Functionality** The React frontend has a theme, and handles most if not all of the available API endpoints.
+- **Frontend Functionality** The React frontend has a theme, and handles all of the important API endpoints
+- **User Profiles** Users can input their metrics and preferences, and this is securely stored in the database
+- **Progression** User can view progression information about specific exercises, or their workout history overall. This is the most dynamic and differentiating feature of the app.
 
 ### 🛠 The Tech Stack
 
@@ -32,7 +32,7 @@ I'm currently working through the following roadmap:
 - [x] **History Dashboard:** A dedicated view to look back at previous sessions.
 - [ ] **Data Validation:** Integrating Zod on the backend to ensure data integrity.
 - [ ] **Progress Tracking:** Charts to visualize strength gains over time.
-- [ ] **Unit Preference** Currently app uses kg only, aiming to add functionality for other measurement systems.
+- [x] **Unit Preference** Currently app uses kg only, aiming to add functionality for other measurement systems.
 
 ---
 
