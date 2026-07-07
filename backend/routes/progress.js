@@ -215,6 +215,53 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         },
       },
     });
+    const recentSessions = await prisma.workout.findMany({
+      where: {
+        userId: userId,
+        workoutExercises: {
+          some: {
+            exerciseId: exerciseId,
+          },
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
+      take: 3,
+      select: {
+        id: true,
+        name: true,
+        date: true,
+        workoutExercises: {
+          where: { exerciseId },
+          select: {
+            sets: {
+              orderBy: {
+                order: "asc",
+              },
+              select: {
+                reps: true,
+                weight: true,
+                weightUnit: true,
+                order: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    // format the recent sessions before returning
+    const formattedRecentSessions = recentSessions.map((workout) => {
+      const sets = workout.workoutExercises.flatMap(
+        (workoutExercise) => workoutExercise.sets,
+      );
+      return {
+        id: workout.id,
+        name: workout.name,
+        date: workout.date,
+        sets,
+      };
+    });
     res.status(200).json({
       error: false,
       data: {
@@ -222,6 +269,7 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         bestWeight,
         totalSets,
         lastTrained,
+        formattedRecentSessions,
       },
     });
   } catch (error) {

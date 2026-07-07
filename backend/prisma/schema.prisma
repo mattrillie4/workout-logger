@@ -19,6 +19,7 @@ model User {
   weight_kg Float?
   date_of_birth DateTime?
   gender    String?
+  preferredWeightUnit String @default("kg")
 }
 
 model Exercise {

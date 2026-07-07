@@ -59,6 +59,7 @@ const profileToForm = (profile) => ({
   weight_kg: profile?.weight_kg ?? "",
   date_of_birth: formatDateInput(profile?.date_of_birth),
   gender: profile?.gender ?? "",
+  preferredWeightUnit: profile?.preferredWeightUnit ?? "kg",
 });
 
 const emptySummary = {
@@ -365,6 +366,25 @@ const Profile = () => {
                         <MenuItem value="other">Other</MenuItem>
                       </Select>
                     </FormControl>
+                    <FormControl fullWidth>
+                      <InputLabel id="weight-unit-label">
+                        Preferred Weight Unit
+                      </InputLabel>
+                      <Select
+                        labelId="weight-unit-label"
+                        label="Prefered Weight Unit"
+                        value={profileForm.preferredWeightUnit}
+                        onChange={(event) => {
+                          updateProfileForm(
+                            "preferredWeightUnit",
+                            event.target.value,
+                          );
+                        }}
+                      >
+                        <MenuItem value="kg">kg</MenuItem>
+                        <MenuItem value="lb">lb</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Box>
                 ) : (
                   <Box
@@ -394,9 +414,13 @@ const Profile = () => {
                       value={calculateAge(profile?.date_of_birth) ?? "-"}
                     />
                     <ProfileField
-                      label="Gender"
+                      label="Gensder"
                       value={capitalise(profile?.gender) || "-"}
                     />
+                    <ProfileField
+                      label="Weight Unit"
+                      value={profile?.preferredWeightUnit}
+                    ></ProfileField>
                   </Box>
                 )}
               </Box>

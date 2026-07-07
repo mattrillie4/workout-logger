@@ -154,6 +154,7 @@ router.get("/profile", authorisation, async (req, res) => {
         weight_kg: true,
         date_of_birth: true,
         gender: true,
+        preferredWeightUnit: true,
       },
     });
     //if user doesnt exist for some reason, return error
@@ -182,7 +183,8 @@ router.get("/profile", authorisation, async (req, res) => {
 router.post("/profile", authorisation, async (req, res) => {
   //extract user id and profile info
   const userId = req.user.userId;
-  const { date_of_birth, weight_kg, height_cm, gender } = req.body ?? {};
+  const { date_of_birth, weight_kg, height_cm, gender, preferredWeightUnit } =
+    req.body ?? {};
   const parsedHeight =
     height_cm === undefined
       ? undefined
@@ -206,6 +208,12 @@ router.post("/profile", authorisation, async (req, res) => {
       ? undefined
       : date_of_birth
         ? new Date(date_of_birth)
+        : null;
+  const parsedPreferredWeightUnit =
+    preferredWeightUnit === undefined
+      ? undefined
+      : preferredWeightUnit === "kg" || preferredWeightUnit === "lb"
+        ? preferredWeightUnit
         : null;
 
   // input validation
@@ -262,6 +270,13 @@ router.post("/profile", authorisation, async (req, res) => {
       .status(400)
       .json({ error: true, message: "Invalid value for gender" });
   }
+
+  if (preferredWeightUnit !== undefined && parsedPreferredWeightUnit === null) {
+    return res.status(400).json({
+      error: true,
+      message: "Preferred weight unit must be kg or lb",
+    });
+  }
   try {
     const updatedProfile = await prisma.user.update({
       where: { id: userId },
@@ -270,12 +285,14 @@ router.post("/profile", authorisation, async (req, res) => {
         weight_kg: parsedWeight,
         height_cm: parsedHeight,
         gender: parsedGender,
+        preferredWeightUnit: parsedPreferredWeightUnit,
       },
       select: {
         height_cm: true,
         weight_kg: true,
         date_of_birth: true,
         gender: true,
+        preferredWeightUnit: true,
       },
     });
     //return success

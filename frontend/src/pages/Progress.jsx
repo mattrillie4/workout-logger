@@ -16,7 +16,9 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import InsightsIcon from "@mui/icons-material/Insights";
+import HistoryIcon from "@mui/icons-material/History";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { useNavigate, useParams } from "react-router-dom";
@@ -400,6 +402,7 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
   const exercise = exerciseProgress?.exercise;
   const bestWeight = exerciseProgress?.bestWeight;
   const bestWeightWorkout = bestWeight?.workoutExercise?.workout;
+  const recentSessions = exerciseProgress?.formattedRecentSessions || [];
 
   if (isLoading) {
     return (
@@ -543,12 +546,11 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
               gap: 2,
               gridTemplateColumns: {
                 xs: "1fr",
-                sm: "repeat(2, minmax(0, 1fr))",
+                sm: "repeat(1, minmax(0, 1fr))",
               },
             }}
           >
             <MetricPlaceholder title="Volume" />
-            <MetricPlaceholder title="Recent History" />
           </Box>
         </Stack>
       </Paper>
@@ -562,15 +564,92 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
           p: { xs: 2, md: 3 },
         }}
       >
+        <Stack spacing={2.5}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
+            sx={{
+              alignItems: { xs: "flex-start", sm: "center" },
+              justifyContent: "space-between",
+            }}
+          >
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <HistoryIcon color="primary" />
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  Recent Sessions
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Your last three logged sessions for this exercise.
+                </Typography>
+              </Box>
+            </Stack>
+            <Chip
+              variant="outlined"
+              color="primary"
+              label={`${recentSessions.length} shown`}
+            />
+          </Stack>
+
+          {recentSessions.length === 0 ? (
+            <Box
+              sx={{
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 1,
+                p: 2,
+              }}
+            >
+              <Typography color="text.secondary">
+                Log this exercise in a workout to see recent sessions here.
+              </Typography>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "repeat(3, minmax(0, 1fr))",
+                },
+              }}
+            >
+              {recentSessions.map((session) => (
+                <RecentSessionCard key={session.id} session={session} />
+              ))}
+            </Box>
+          )}
+        </Stack>
+      </Paper>
+
+      <Paper
+        elevation={0}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 2,
+          p: { xs: 2, md: 3 },
+        }}
+      >
         <Stack spacing={1}>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <EmojiEventsIcon sx={{ color: "warning.main", fontSize: 24 }} />
             Best Set
           </Typography>
           {bestWeight ? (
             <>
               <Typography sx={{ fontWeight: 700 }}>
-                {formatNumber(bestWeight.weight)} {bestWeight.weightUnit || "kg"}{" "}
-                x {bestWeight.reps}
+                {formatNumber(bestWeight.weight)}{" "}
+                {bestWeight.weightUnit || "kg"} x {bestWeight.reps}
               </Typography>
               <Typography color="text.secondary">
                 {bestWeightWorkout?.name || "Workout"}
@@ -587,6 +666,80 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
         </Stack>
       </Paper>
     </Stack>
+  );
+};
+
+const RecentSessionCard = ({ session }) => {
+  const sets = session.sets || [];
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        bgcolor: "#24282E",
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 1,
+        minHeight: 190,
+        overflow: "hidden",
+      }}
+    >
+      <Stack spacing={0}>
+        <Box
+          sx={{
+            borderBottom: "1px solid",
+            borderColor: "divider",
+            p: 2,
+          }}
+        >
+          <Stack spacing={0.75}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 800, overflowWrap: "anywhere" }}
+            >
+              {session.name || "Workout"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {formatDate(session.date)}
+            </Typography>
+          </Stack>
+        </Box>
+
+        <Stack spacing={1.25} sx={{ p: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Chip
+              color="secondary"
+              variant="outlined"
+              size="small"
+              label={`${sets.length} ${sets.length === 1 ? "set" : "sets"}`}
+            />
+          </Stack>
+
+          {sets.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              No sets returned for this session.
+            </Typography>
+          ) : (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {sets.map((set, index) => (
+                <Chip
+                  key={`${session.id}-${set.order || index}`}
+                  size="small"
+                  variant="outlined"
+                  label={`${set.reps} x ${formatNumber(set.weight)} ${
+                    set.weightUnit || "kg"
+                  }`}
+                  sx={{
+                    bgcolor: "rgba(255, 90, 31, 0.08)",
+                    borderColor: "rgba(255, 90, 31, 0.34)",
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+        </Stack>
+      </Stack>
+    </Paper>
   );
 };
 

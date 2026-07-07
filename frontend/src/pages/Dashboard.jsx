@@ -24,23 +24,23 @@ import api from "../api/axiosConfig";
 import { useAuth } from "../context/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-const blankSet = () => ({
+const blankSet = (weightUnit = "kg") => ({
   reps: "",
   weight: "",
-  weightUnit: "kg",
+  weightUnit,
 });
 
-const blankWorkoutExercise = () => ({
+const blankWorkoutExercise = (weightUnit = "kg") => ({
   exerciseId: "",
-  sets: [blankSet()],
+  sets: [blankSet(weightUnit)],
 });
 
-const initialWorkout = () => ({
+const initialWorkout = (weightUnit = "kg") => ({
   name: "",
   date: new Date().toISOString().slice(0, 10),
   notes: "",
   cardioDuration: "",
-  exercises: [blankWorkoutExercise()],
+  exercises: [blankWorkoutExercise(weightUnit)],
 });
 
 const DRAFT_WORKOUT_KEY = "draftWorkout";
@@ -80,6 +80,7 @@ const Dashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [preferredWeightUnit, setPreferredWeightUnit] = useState("kg");
 
   // extract search params to update workout
   const editWorkoutId = searchParams.get("editWorkoutId");
@@ -103,9 +104,34 @@ const Dashboard = () => {
         setIsLoadingExercises(false);
       }
     };
-
     fetchExercises();
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/user/profile");
+        const nextPreferredWeightUnit =
+          response.data.data.preferredWeightUnit || "kg";
+
+        setPreferredWeightUnit(nextPreferredWeightUnit);
+
+        setWorkout((currentWorkout) =>
+          !isEditing && !hasWorkoutDraftContent(currentWorkout)
+            ? initialWorkout(nextPreferredWeightUnit)
+            : currentWorkout,
+        );
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Could not fetch user profile.",
+        );
+      }
+    };
+
+    fetchUser();
+  }, [isLoggedIn, isEditing]);
   // separate useEffect that fetches the data for updating a workout
   useEffect(() => {
     // return if not editing the workout
@@ -195,7 +221,10 @@ const Dashboard = () => {
   const addExercise = () => {
     setWorkout((current) => ({
       ...current,
-      exercises: [...current.exercises, blankWorkoutExercise()],
+      exercises: [
+        ...current.exercises,
+        blankWorkoutExercise(preferredWeightUnit),
+      ],
     }));
   };
 
@@ -213,7 +242,10 @@ const Dashboard = () => {
       ...current,
       exercises: current.exercises.map((exercise, index) =>
         index === exerciseIndex
-          ? { ...exercise, sets: [...exercise.sets, blankSet()] }
+          ? {
+              ...exercise,
+              sets: [...exercise.sets, blankSet(preferredWeightUnit)],
+            }
           : exercise,
       ),
     }));
@@ -270,6 +302,10 @@ const Dashboard = () => {
         if (Number.isNaN(weight) || weight < 0) {
           return "Each set needs a weight of 0 or more.";
         }
+
+        if (!["kg", "lb"].includes(set.weightUnit)) {
+          return "Each set needs a valid weight unit.";
+        }
       }
     }
 
@@ -314,7 +350,7 @@ const Dashboard = () => {
         // post request for new workout
         await api.post("/workouts", payload);
         localStorage.removeItem(DRAFT_WORKOUT_KEY);
-        setWorkout(initialWorkout());
+        setWorkout(initialWorkout(preferredWeightUnit));
         setSuccess("Workout saved successfully.");
       }
     } catch (err) {
@@ -667,7 +703,7 @@ const Dashboard = () => {
                   navigate("/workouts");
                 }
                 localStorage.removeItem(DRAFT_WORKOUT_KEY);
-                setWorkout(initialWorkout());
+                setWorkout(initialWorkout(preferredWeightUnit));
                 setError("");
                 setSuccess("");
               }}
