@@ -73,6 +73,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Workout Logger API", docs: "coming soon" });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+}
+
+module.exports = app;
