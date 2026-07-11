@@ -414,7 +414,7 @@ const Profile = () => {
                       value={calculateAge(profile?.date_of_birth) ?? "-"}
                     />
                     <ProfileField
-                      label="Gensder"
+                      label="Gender"
                       value={capitalise(profile?.gender) || "-"}
                     />
                     <ProfileField
