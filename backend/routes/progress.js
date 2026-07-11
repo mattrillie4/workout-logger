@@ -262,6 +262,64 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         sets,
       };
     });
+
+    // a longer progress history than recent sessions, mostly for charts
+    const rawProgressHistory = await prisma.workout.findMany({
+      where: {
+        userId: userId,
+        workoutExercises: {
+          some: {
+            exerciseId: exerciseId,
+          },
+        },
+      },
+      orderBy: {
+        date: "desc",
+      },
+      take: 15,
+      select: {
+        id: true,
+        name: true,
+        date: true,
+        workoutExercises: {
+          where: { exerciseId },
+          select: {
+            sets: {
+              orderBy: {
+                order: "asc",
+              },
+              select: {
+                reps: true,
+                weight: true,
+                weightUnit: true,
+                order: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    // format the raw progress history, to kg for accurate volume
+    const progressHistory = rawProgressHistory.map((workout) => {
+      const sets = workout.workoutExercises.flatMap(
+        (workoutExercise) => workoutExercise.sets,
+      );
+
+      const volumeKg = sets.reduce((total, set) => {
+        const weightKg = toKg(set.weight, set.weightUnit);
+        return total + set.reps * weightKg;
+      }, 0);
+
+      return {
+        workoutId: workout.id,
+        name: workout.name,
+        date: workout.date,
+        volumeKg,
+        totalSets: sets.length,
+      };
+    });
+
+    //return success and data
     res.status(200).json({
       error: false,
       data: {
@@ -270,6 +328,7 @@ router.get("/exercises/:id", authorisation, async (req, res) => {
         totalSets,
         lastTrained,
         formattedRecentSessions,
+        progressHistory,
       },
     });
   } catch (error) {

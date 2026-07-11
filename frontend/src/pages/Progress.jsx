@@ -14,6 +14,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { BarChart } from "@mui/x-charts/BarChart";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -403,6 +404,7 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
   const bestWeight = exerciseProgress?.bestWeight;
   const bestWeightWorkout = bestWeight?.workoutExercise?.workout;
   const recentSessions = exerciseProgress?.formattedRecentSessions || [];
+  const progressHistory = exerciseProgress?.progressHistory || [];
 
   if (isLoading) {
     return (
@@ -528,18 +530,6 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
         }}
       >
         <Stack spacing={2}>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <ShowChartIcon color="primary" />
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                Metric Slots
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Add new backend fields here as you expand progress tracking.
-              </Typography>
-            </Box>
-          </Stack>
-
           <Box
             sx={{
               display: "grid",
@@ -550,7 +540,10 @@ const ExerciseDetail = ({ exerciseProgress, isLoading, onBack }) => {
               },
             }}
           >
-            <MetricPlaceholder title="Volume" />
+            <MetricPlaceholder
+              title="Volume"
+              progressHistory={progressHistory}
+            />
           </Box>
         </Stack>
       </Paper>
@@ -743,21 +736,44 @@ const RecentSessionCard = ({ session }) => {
   );
 };
 
-const MetricPlaceholder = ({ title }) => (
-  <Box
-    sx={{
-      border: "1px dashed",
-      borderColor: "divider",
-      borderRadius: 1,
-      p: 2,
-    }}
-  >
-    <Typography sx={{ fontWeight: 700 }}>{title}</Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-      Ready for a future backend metric.
-    </Typography>
-  </Box>
-);
+const MetricPlaceholder = ({ title, progressHistory }) => {
+  const chartData = [...progressHistory].reverse().map((session, index) => ({
+    label: `${index + 1}. ${session.name} - ${formatDate(session.date)}`,
+    volumeKg: Number(session.volumeKg || 0),
+  }));
+
+  return (
+    <Box
+      sx={{
+        border: "1px dashed",
+        borderColor: "divider",
+        borderRadius: 1,
+        p: 2,
+      }}
+    >
+      <Typography sx={{ fontWeight: 700 }}>{title}</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        Volume from your progress history.
+      </Typography>
+      <BarChart
+        xAxis={[
+          {
+            id: "volumeOverTime",
+            scaleType: "band",
+            data: chartData.map((item) => item.label),
+          },
+        ]}
+        series={[
+          {
+            label: "Volume (kg)",
+            data: chartData.map((item) => item.volumeKg),
+          },
+        ]}
+        height={350}
+      />
+    </Box>
+  );
+};
 
 const ProgressMetric = ({ label, value, unit, caption }) => (
   <Paper
