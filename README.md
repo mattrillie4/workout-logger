@@ -6,7 +6,7 @@ This project is currently a **work in progress** as I build out more features an
 
 The project has been deployed (both backend and frontend), but features and improvements will still be made
 
-### Live link: <workout-logger-beryl.vercel.app>
+### Live link: <https://workout-logger-beryl.vercel.app>
 
 ---
 
