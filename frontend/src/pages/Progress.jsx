@@ -20,6 +20,7 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import InsightsIcon from "@mui/icons-material/Insights";
 import HistoryIcon from "@mui/icons-material/History";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import { useNavigate, useParams } from "react-router-dom";
@@ -32,6 +33,7 @@ const emptySummary = {
   totalCardioMinutes: 0,
   totalVolumeKg: 0,
   mostTrainedCategory: null,
+  currentStreak: 0,
 };
 // format helper functions
 const formatCategory = (category) => {
@@ -269,6 +271,8 @@ const Progress = () => {
               </Box>
             </Paper>
 
+            <StreakCard streak={summary.currentStreak} />
+
             {exerciseId ? (
               <ExerciseDetail
                 exerciseProgress={exerciseProgress}
@@ -284,6 +288,61 @@ const Progress = () => {
     </Box>
   );
 };
+
+const StreakCard = ({ streak }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      bgcolor: "#24282E",
+      border: "1px solid",
+      borderColor: "rgba(255, 152, 0, 0.42)",
+      borderRadius: 2,
+      overflow: "hidden",
+    }}
+  >
+    <Box
+      sx={{
+        alignItems: "center",
+        display: "flex",
+        gap: 2,
+        justifyContent: "space-between",
+        p: { xs: 2, md: 2.5 },
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Box
+          sx={{
+            alignItems: "center",
+            bgcolor: "rgba(255, 152, 0, 0.14)",
+            border: "1px solid rgba(255, 152, 0, 0.34)",
+            borderRadius: "50%",
+            color: "warning.main",
+            display: "flex",
+            height: 52,
+            justifyContent: "center",
+            width: 52,
+          }}
+        >
+          <LocalFireDepartmentIcon fontSize="large" />
+        </Box>
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            Current streak
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+            {streak || 0}{" "}
+            <Typography component="span" color="text.secondary">
+              {(streak || 0) === 1 ? "day" : "days"}
+            </Typography>
+          </Typography>
+        </Box>
+      </Stack>
+      <Typography color="text.secondary" sx={{ fontWeight: 700 }}>
+        {streak > 0 ? "Active streak" : "No active streak"}
+      </Typography>
+    </Box>
+  </Paper>
+);
 
 const SummaryMetric = ({ label, value, unit }) => (
   <Box

@@ -10,6 +10,40 @@ const toKg = (weight, unit) => {
   if (unit === "lb") return weight * 0.45359237;
   return weight;
 };
+
+// converts dates to appropriate formats
+const toDateKey = (date) => {
+  const parsedDate = new Date(date);
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+// function for subtracting from dates
+const subtractDays = (date, days) => {
+  const copy = new Date(date);
+  copy.setDate(copy.getDate() - days);
+  return copy;
+};
+
+const calculateWorkoutStreak = (workoutDates) => {
+  const workoutDays = new Set(workoutDates.map((date) => toDateKey(date)));
+
+  const today = new Date();
+  const todayKey = toDateKey(today);
+  let currentDay = workoutDays.has(todayKey) ? today : subtractDays(today, 1);
+  let currentStreak = 0;
+
+  while (workoutDays.has(toDateKey(currentDay))) {
+    currentStreak++;
+    currentDay = subtractDays(currentDay, 1);
+  }
+
+  return currentStreak;
+};
+
 // GET request, returns overarching summary information about a users workout history
 // Things like total workouts, workouts this week, sets, etc.
 router.get("/summary", authorisation, async (req, res) => {
@@ -106,6 +140,17 @@ router.get("/summary", authorisation, async (req, res) => {
       Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ??
       null;
 
+    // calculate workout streak (consecutive days logged at least one workout)
+    const workouts = await prisma.workout.findMany({
+      where: { userId },
+      orderBy: { date: "desc" },
+      select: { date: true },
+    });
+
+    const currentStreak = calculateWorkoutStreak(
+      workouts.map((workout) => workout.date),
+    );
+
     // return success and data
     res.status(200).json({
       error: false,
@@ -116,6 +161,7 @@ router.get("/summary", authorisation, async (req, res) => {
         totalCardioMinutes,
         totalVolumeKg,
         mostTrainedCategory,
+        currentStreak,
       },
     });
   } catch (error) {

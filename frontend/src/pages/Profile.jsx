@@ -17,6 +17,7 @@ import {
 import LoginIcon from "@mui/icons-material/Login";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import api from "../api/axiosConfig";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -66,6 +67,7 @@ const emptySummary = {
   totalWorkouts: 0,
   workoutsLastSevenDays: 0,
   totalSets: 0,
+  currentStreak: 0,
 };
 
 const Profile = () => {
@@ -490,6 +492,7 @@ const Profile = () => {
                   }
                 />
               </Box>
+              <StreakCard streak={summary.currentStreak} />
             </Box>
 
             <Divider />
@@ -530,6 +533,62 @@ const ProfileField = ({ label, value }) => (
       {value ?? "-"}
     </Typography>
   </Box>
+);
+
+const StreakCard = ({ streak }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      bgcolor: "#24282E",
+      border: "1px solid",
+      borderColor: "rgba(255, 152, 0, 0.42)",
+      borderRadius: 2,
+      mt: 2,
+      overflow: "hidden",
+    }}
+  >
+    <Box
+      sx={{
+        alignItems: "center",
+        display: "flex",
+        gap: 2,
+        justifyContent: "space-between",
+        p: 2,
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Box
+          sx={{
+            alignItems: "center",
+            bgcolor: "rgba(255, 152, 0, 0.14)",
+            border: "1px solid rgba(255, 152, 0, 0.34)",
+            borderRadius: "50%",
+            color: "warning.main",
+            display: "flex",
+            height: 48,
+            justifyContent: "center",
+            width: 48,
+          }}
+        >
+          <LocalFireDepartmentIcon />
+        </Box>
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            Current streak
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+            {streak || 0}{" "}
+            <Typography component="span" color="text.secondary">
+              {(streak || 0) === 1 ? "day" : "days"}
+            </Typography>
+          </Typography>
+        </Box>
+      </Stack>
+      <Typography color="text.secondary" sx={{ fontWeight: 700 }}>
+        {streak > 0 ? "Active streak" : "No active streak"}
+      </Typography>
+    </Box>
+  </Paper>
 );
 
 const SummaryField = ({ label, value }) => (
