@@ -226,7 +226,7 @@ const Exercises = () => {
       <Box sx={{ maxWidth: 1100, mx: "auto" }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
-          spacing={2}
+          spacing={5}
           alignItems={{ xs: "stretch", sm: "flex-start" }}
           justifyContent="space-between"
           sx={{ mb: 3 }}
@@ -236,7 +236,7 @@ const Exercises = () => {
               Exercise Library
             </Typography>
             <Typography color="text.secondary">
-              Browse default exercises and your custom movement library.
+              Browse default exercises and your custom movement library
             </Typography>
           </Stack>
 
