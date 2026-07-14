@@ -6,7 +6,7 @@ This project is currently a **work in progress** as I build out more features an
 
 The project has been deployed (both backend and frontend), but features and improvements will still be made
 
-### Live link: workout-logger-beryl.vercel.app
+### Live link: <workout-logger-beryl.vercel.app>
 
 ---
 
@@ -27,7 +27,7 @@ The project has been deployed (both backend and frontend), but features and impr
 - **Database:** PostgreSQL (hosted on Neon)
 - **ORM:** Prisma
 - **Authentication:** JSON Web Tokens (JWT)
-- **Deployment** Vercel for frontend and Render for backend (free tiers)
+- **Deployment:** Vercel for frontend and Render for backend (free tiers)
 
 ### 🏗️ Architecture
 
