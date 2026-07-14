@@ -159,11 +159,12 @@ router.post("/", authorisation, async (req, res) => {
 });
 
 // GET request, "/workouts", allows a user to retrieve a list of their created workouts
-// optional query params: exerciseId, category, search, from, to, sort
+// optional query params: exerciseId, category, search, from, to, sort, page, pageSize
 router.get("/", authorisation, async (req, res) => {
   const userId = req.user.userId;
   // accepted query params
-  const { search, exerciseId, category, from, to, sort } = req.query;
+  const { search, exerciseId, category, from, to, sort, page, pageSize } =
+    req.query;
 
   // build database query
   const where = {
@@ -286,29 +287,70 @@ router.get("/", authorisation, async (req, res) => {
   }
 
   try {
+    const parsedPage = page !== undefined ? parseInt(page) : null;
+    const parsedPageSize =
+      pageSize !== undefined ? parseInt(pageSize) : null;
+    const shouldPaginate = parsedPage !== null || parsedPageSize !== null;
+
+    if (
+      shouldPaginate &&
+      (Number.isNaN(parsedPage) ||
+        Number.isNaN(parsedPageSize) ||
+        parsedPage < 1 ||
+        parsedPageSize < 1 ||
+        parsedPageSize > 50)
+    ) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid pagination values",
+      });
+    }
+
+    const paginationOptions = shouldPaginate
+      ? {
+          skip: (parsedPage - 1) * parsedPageSize,
+          take: parsedPageSize,
+        }
+      : {};
+
     // query database for all workouts by user, ordering by most recent, and including the exercises and sets
-    const workouts = await prisma.workout.findMany({
-      where: where,
-      orderBy,
-      include: {
-        workoutExercises: {
-          orderBy: {
-            order: "asc",
-          },
-          include: {
-            exercise: true,
-            sets: {
-              orderBy: {
-                order: "asc",
+    const [workouts, totalWorkouts] = await Promise.all([
+      prisma.workout.findMany({
+        where: where,
+        orderBy,
+        ...paginationOptions,
+        include: {
+          workoutExercises: {
+            orderBy: {
+              order: "asc",
+            },
+            include: {
+              exercise: true,
+              sets: {
+                orderBy: {
+                  order: "asc",
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+      shouldPaginate ? prisma.workout.count({ where }) : null,
+    ]);
+
+    const pagination = shouldPaginate
+      ? {
+          page: parsedPage,
+          pageSize: parsedPageSize,
+          totalItems: totalWorkouts,
+          totalPages: Math.max(1, Math.ceil(totalWorkouts / parsedPageSize)),
+        }
+      : undefined;
+
     res.status(200).json({
       error: false,
       data: workouts,
+      ...(pagination ? { pagination } : {}),
     });
   } catch (error) {
     console.error(error);
