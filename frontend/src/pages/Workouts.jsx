@@ -22,7 +22,7 @@ import WorkoutFilters from "../components/WorkoutFilters";
 // helper functions
 const formatWorkoutDate = (date) => {
   if (!date) return "-";
-  return new Date(date).toLocaleDateString(); //format date if provided
+  return new Date(date).toLocaleDateString("en-AU"); //format date if provided
 };
 
 const defaultFilters = {

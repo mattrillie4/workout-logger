@@ -234,7 +234,7 @@ const Profile = () => {
                     label="Member since"
                     value={
                       user?.createdAt
-                        ? new Date(user.createdAt).toLocaleDateString()
+                        ? new Date(user.createdAt).toLocaleDateString("en-AU")
                         : "-"
                     }
                   />

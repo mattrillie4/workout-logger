@@ -44,7 +44,7 @@ const formatCategory = (category) => {
 
 const formatDate = (date) => {
   if (!date) return "-";
-  return new Date(date).toLocaleDateString();
+  return new Date(date).toLocaleDateString("en-AU");
 };
 
 const formatNumber = (value) => {
