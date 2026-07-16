@@ -185,6 +185,15 @@ const Workouts = () => {
     }
   };
 
+  const firstWorkoutNumber =
+    pagination.totalItems === 0
+      ? 0
+      : (pagination.page - 1) * pagination.pageSize + 1;
+  const lastWorkoutNumber = Math.min(
+    pagination.page * pagination.pageSize,
+    pagination.totalItems,
+  );
+
   return (
     <Box
       component="main"
@@ -266,8 +275,8 @@ const Workouts = () => {
         ) : (
           <Stack spacing={2}>
             <Typography variant="body2" color="text.secondary">
-              Showing page {pagination.page} of {pagination.totalPages} (
-              {pagination.totalItems} workouts)
+              Showing {firstWorkoutNumber}-{lastWorkoutNumber} of{" "}
+              {pagination.totalItems} workouts
             </Typography>
 
             {workouts.map((workout) => (
@@ -380,7 +389,10 @@ const Workouts = () => {
                             Notes
                           </Typography>
                         </Stack>
-                        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ whiteSpace: "pre-wrap" }}
+                        >
                           {workout.notes}
                         </Typography>
                       </Box>
