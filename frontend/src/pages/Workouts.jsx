@@ -11,6 +11,9 @@ import {
   Stack,
   Typography,
   Tooltip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,6 +21,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import NotesIcon from "@mui/icons-material/Notes";
 import TimerIcon from "@mui/icons-material/Timer";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import api from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import WorkoutFilters from "../components/WorkoutFilters";
@@ -376,25 +380,55 @@ const Workouts = () => {
                           p: 1.5,
                         }}
                       >
-                        <Stack direction="row" spacing={1} sx={{ mb: 0.5 }}>
-                          <NotesIcon
-                            color="secondary"
-                            sx={{ fontSize: 18, mt: "2px" }}
-                          />
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontWeight: 700 }}
-                          >
-                            Notes
-                          </Typography>
-                        </Stack>
-                        <Typography
-                          variant="body2"
-                          sx={{ whiteSpace: "pre-wrap" }}
+                        <Accordion
+                          defaultExpanded
+                          disableGutters
+                          elevation={0}
+                          sx={{
+                            bgcolor: "transparent",
+                            color: "inherit",
+                            "&:before": { display: "none" },
+                          }}
                         >
-                          {workout.notes}
-                        </Typography>
+                          <AccordionSummary
+                            expandIcon={<ExpandMoreIcon fontSize="small" />}
+                            sx={{
+                              minHeight: 0,
+                              p: 0,
+                              "& .MuiAccordionSummary-content": {
+                                alignItems: "center",
+                                my: 0,
+                              },
+                            }}
+                          >
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <NotesIcon
+                                color="secondary"
+                                sx={{ fontSize: 18 }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ fontWeight: 700, lineHeight: 1.4 }}
+                              >
+                                Notes
+                              </Typography>
+                            </Stack>
+                          </AccordionSummary>
+                          <AccordionDetails sx={{ px: 0, pb: 0, pt: 1 }}>
+                            <Typography
+                              variant="body2"
+                              color="text.primary"
+                              sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
+                            >
+                              {workout.notes}
+                            </Typography>
+                          </AccordionDetails>
+                        </Accordion>
                       </Box>
                     )}
                   </Stack>

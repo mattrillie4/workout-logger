@@ -288,8 +288,7 @@ router.get("/", authorisation, async (req, res) => {
 
   try {
     const parsedPage = page !== undefined ? parseInt(page) : null;
-    const parsedPageSize =
-      pageSize !== undefined ? parseInt(pageSize) : null;
+    const parsedPageSize = pageSize !== undefined ? parseInt(pageSize) : null;
     const shouldPaginate = parsedPage !== null || parsedPageSize !== null;
 
     if (
