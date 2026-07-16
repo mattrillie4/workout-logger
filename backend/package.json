@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "jest"
+    "test": "set NODE_ENV=test&& jest"
   },
   "keywords": [],
   "author": "",

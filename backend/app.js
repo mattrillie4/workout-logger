@@ -11,6 +11,7 @@ const userRouter = require("./routes/user");
 const progressRouter = require("./routes/progress");
 const app = express();
 const port = process.env.PORT || 3000;
+const isTest = process.env.NODE_ENV === "test";
 
 app.set("trust proxy", 1); // for deployment
 
@@ -45,7 +46,6 @@ const generalLimiter = rateLimit({
     message: "Too many requests, please try later",
   },
 });
-app.use(generalLimiter); // every IP can only make 100 requests every 15 mintue, broadly protects every endpoint
 
 // separate limiter for authentication requests (login and register)
 const authLimiter = rateLimit({
@@ -58,9 +58,14 @@ const authLimiter = rateLimit({
     message: "Too many authentication attempts, please try again later",
   },
 });
-// apply to both auth routes, this time only 10 requests per 15 min
-app.use("/user/login", authLimiter);
-app.use("/user/register", authLimiter);
+
+if (!isTest) {
+  app.use(generalLimiter); // every IP can only make 100 requests every 15 minute, broadly protects every endpoint
+
+  // apply to both auth routes, this time only 10 requests per 15 min
+  app.use("/user/login", authLimiter);
+  app.use("/user/register", authLimiter);
+}
 
 app.use(morgan("dev"));
 app.use(express.json());

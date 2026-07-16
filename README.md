@@ -67,6 +67,11 @@ I'm currently working through the following roadmap:
 <img width="684" height="434" alt="image" src="https://github.com/user-attachments/assets/3cd09f97-5098-4735-b433-72f398b3ad03" />
 <img width="688" height="421" alt="image" src="https://github.com/user-attachments/assets/eddc3032-a168-41d0-abb7-5f4c38da1f9f" />
 
+## Testing
+
+- The backend testing suite uses Jest and Supertest
+  Tests currently cover expected success, validation, auth, conflict, and ownership cases. Internal server error handling is left for future mocked unit tests.
+
 ## What I Learned
 
 - Relational database design with Prisma schemas
