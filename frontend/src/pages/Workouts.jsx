@@ -361,11 +361,25 @@ const Workouts = () => {
                       </Stack>
                     </Stack>
 
-                    {workout.cardioDuration && (
+                    {workout.cardioDuration ? (
                       <Stack direction="row" spacing={1} alignItems="center">
                         <TimerIcon color="primary" sx={{ fontSize: 18 }} />
                         <Typography variant="body2" color="text.secondary">
                           {workout.cardioDuration} min cardio
+                        </Typography>
+                      </Stack>
+                    ) : (
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            opacity: 0.5,
+                            fontStyle: "italic",
+                            fontSize: 14,
+                          }}
+                        >
+                          No cardio this session
                         </Typography>
                       </Stack>
                     )}

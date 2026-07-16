@@ -798,7 +798,7 @@ const RecentSessionCard = ({ session }) => {
 const MetricPlaceholder = ({ title, progressHistory }) => {
   const chartData = [...progressHistory].reverse().map((session, index) => ({
     label: `${index + 1}. ${session.name} - ${formatDate(session.date)}`,
-    volumeKg: Number(session.volumeKg || 0),
+    volumeKg: Number(session.volumeKg.toFixed(2) || 0),
   }));
 
   return (
