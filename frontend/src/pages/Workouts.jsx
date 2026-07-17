@@ -316,6 +316,37 @@ const Workouts = () => {
                         <Typography color="text.secondary">
                           {formatWorkoutDate(workout.date)}
                         </Typography>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          sx={{
+                            alignItems: "center",
+                            color: "text.secondary",
+                            flexWrap: "wrap",
+                            mt: 0.75,
+                          }}
+                        >
+                          <Typography variant="body2">
+                            {workout.totalExercises || 0}{" "}
+                            {(workout.totalExercises || 0) === 1
+                              ? "exercise"
+                              : "exercises"}
+                          </Typography>
+                          <Box
+                            component="span"
+                            sx={{
+                              bgcolor: "text.secondary",
+                              borderRadius: "50%",
+                              height: 4,
+                              opacity: 0.6,
+                              width: 4,
+                            }}
+                          />
+                          <Typography variant="body2">
+                            {workout.totalSets || 0}{" "}
+                            {(workout.totalSets || 0) === 1 ? "set" : "sets"}
+                          </Typography>
+                        </Stack>
                       </Box>
 
                       <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
@@ -447,7 +478,6 @@ const Workouts = () => {
                     )}
                   </Stack>
                 </Box>
-
                 <Divider />
 
                 <Stack spacing={2} sx={{ p: { xs: 2, md: 3 } }}>

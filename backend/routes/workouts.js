@@ -337,6 +337,15 @@ router.get("/", authorisation, async (req, res) => {
       shouldPaginate ? prisma.workout.count({ where }) : null,
     ]);
 
+    // calculate total sets and exercises for each workout in the list
+    const formattedWorkouts = workouts.map((workout) => ({
+      ...workout,
+      totalExercises: workout.workoutExercises.length,
+      totalSets: workout.workoutExercises.reduce((total, workoutExercise) => {
+        return total + workoutExercise.sets.length;
+      }, 0),
+    }));
+
     const pagination = shouldPaginate
       ? {
           page: parsedPage,
@@ -348,7 +357,7 @@ router.get("/", authorisation, async (req, res) => {
 
     res.status(200).json({
       error: false,
-      data: workouts,
+      data: formattedWorkouts,
       ...(pagination ? { pagination } : {}),
     });
   } catch (error) {
