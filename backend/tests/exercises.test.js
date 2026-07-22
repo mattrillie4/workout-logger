@@ -1,5 +1,12 @@
 const request = require("supertest");
 const app = require("../app");
+const { createTestUserAndToken } = require("./testHelpers");
+
+// create, login user, and store token
+beforeAll(async () => {
+  const result = await createTestUserAndToken();
+  token = result.token;
+});
 
 // Tests the endpoints contained in exercises.js
 
@@ -32,5 +39,24 @@ describe("GET /me", () => {
     expect(response.body.message).toBe(
       "Authorization header ('Bearer token') not found",
     );
+  });
+});
+
+describe("GET /:category", () => {
+  it("rejects requests without a token", async () => {
+    const response = await request(app).get("/exercises/chest");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe(true);
+    expect(response.body.message).toBe(
+      "Authorization header ('Bearer token') not found",
+    );
+  });
+  it("returns exercises in specific category with valid token", async () => {
+    const response = await request(app)
+      .get("/exercises/chest")
+      .set("Authorization", `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body.error).toBe(false);
   });
 });

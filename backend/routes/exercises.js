@@ -202,16 +202,19 @@ router.patch("/:id/restore", authorisation, async (req, res) => {
 });
 
 // GET request, /exercises/:category
-// Return all the globale exercises in a specific category (chest, legs, etc.)
-router.get("/:category", async (req, res) => {
+// Return all the exercises in a specific category (chest, legs, etc.)
+router.get("/:category", authorisation, async (req, res) => {
   //extract the category from the request
   const exerciseCategory = req.params.category;
-
+  const userId = req.user.userId;
   try {
     // query the exercise table
     const results = await prisma.exercise.findMany({
-      where: { category: exerciseCategory },
-    });
+      where: {
+        category: exerciseCategory,
+        OR: [{ userId: null }, { userId: userId }],
+      },
+    }); // only return global or user-made exercises
     //return success
     res.status(200).json({
       error: false,
