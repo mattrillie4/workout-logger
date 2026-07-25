@@ -1,6 +1,12 @@
 const request = require("supertest");
 const app = require("../app");
-const { makeTestEmail } = require("./testHelpers");
+const { makeTestEmail, createTestUserAndToken } = require("./testHelpers");
+
+// create, login user, and store token
+beforeAll(async () => {
+  const result = await createTestUserAndToken();
+  token = result.token;
+});
 
 // most basic test, tests server is running
 describe("GET /", () => {
@@ -13,6 +19,31 @@ describe("GET /", () => {
 });
 
 // Auth testing
+// GET /me
+describe("GET /me", () => {
+  it("rejects requests without a token", async () => {
+    const response = await request(app).get("/user/me");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe(true);
+    expect(response.body.message).toBe(
+      "Authorization header ('Bearer token') not found",
+    );
+  });
+  it("returns user information with valid JWT", async () => {
+    const response = await request(app)
+      .get("/user/me")
+      .set("Authorization", `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body.error).toBe(false);
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data).toMatchObject({
+      id: expect.any(Number),
+      email: expect.any(String),
+      createdAt: expect.any(String),
+    });
+  });
+});
 // POST register testing, /user/register
 
 const registerEmail = makeTestEmail(); // create temporary test email

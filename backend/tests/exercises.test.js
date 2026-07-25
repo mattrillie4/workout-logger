@@ -56,7 +56,46 @@ describe("GET /:category", () => {
     const response = await request(app)
       .get("/exercises/chest")
       .set("Authorization", `Bearer ${token}`);
+
     expect(response.status).toBe(200);
     expect(response.body.error).toBe(false);
+    expect(Array.isArray(response.body.data)).toBe(true); // no exercises should be archived in this endpoint
+    expect(
+      response.body.data.some((exercise) => exercise.isArchived === true),
+    ).toBe(false);
+    expect(
+      response.body.data.every((exercise) => exercise.category === "chest"),
+    ).toBe(true); // all should be chest for this test example
+    //test structure of response
+    expect(response.body.data[0]).toHaveProperty("userId");
+    expect(response.body.data[0]).toMatchObject({
+      id: expect.any(Number),
+      name: expect.any(String),
+      category: "chest",
+      isArchived: false,
+    });
+  });
+});
+
+describe("GET /archived", () => {
+  it("rejects requests without a token", async () => {
+    const response = await request(app).get("/exercises/archived");
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe(true);
+    expect(response.body.message).toBe(
+      "Authorization header ('Bearer token') not found",
+    );
+  });
+  it("returns user archived exercises", async () => {
+    const response = await request(app)
+      .get("/exercises/ archived")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.error).toBe(false);
+    expect(
+      response.body.data.every((exercise) => exercise.isArchived === true),
+    ).toBe(true);
   });
 });

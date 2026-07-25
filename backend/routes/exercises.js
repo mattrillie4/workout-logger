@@ -212,6 +212,7 @@ router.get("/:category", authorisation, async (req, res) => {
     const results = await prisma.exercise.findMany({
       where: {
         category: exerciseCategory,
+        isArchived: false,
         OR: [{ userId: null }, { userId: userId }],
       },
     }); // only return global or user-made exercises
